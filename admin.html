@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - App Vivero</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef4ec;
+    color:#1e2f1e;
+}
+
+header{
+    background:#214d2b;
+    color:white;
+    padding:25px;
+    text-align:center;
+}
+
+.contenedor{
+    max-width:1100px;
+    margin:auto;
+    padding:25px;
+}
+
+.panel{
+    background:white;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+    margin-bottom:30px;
+}
+
+input, textarea, button{
+    width:100%;
+    padding:13px;
+    margin:8px 0;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:16px;
+    box-sizing:border-box;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-guardar{
+    background:#214d2b;
+    color:white;
+}
+
+.btn-cancelar{
+    background:#777;
+    color:white;
+    display:none;
+}
+
+.preview{
+    width:100%;
+    max-height:300px;
+    object-fit:cover;
+    border-radius:14px;
+    display:none;
+    margin:10px 0;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 8px 20px rgba(0,0,0,.12);
+}
+
+.card img{
+    width:100%;
+    height:210px;
+    object-fit:cover;
+}
+
+.card-info{
+    padding:15px;
+}
+
+.precio{
+    font-size:22px;
+    font-weight:bold;
+    color:#214d2b;
+}
+
+.acciones{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+}
+
+.btn-editar{
+    background:#f0b429;
+    color:#222;
+}
+
+.btn-eliminar{
+    background:#d93025;
+    color:white;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Panel Admin - App Vivero</h1>
+    <p>Cargar, editar y eliminar productos</p>
+</header>
+
+<div class="contenedor">
+
+    <div class="panel">
+        <h2 id="titulo-form">Agregar Producto</h2>
+
+        <input type="text" id="nombre" placeholder="Nombre del producto">
+        <input type="number" id="precio" placeholder="Precio">
+        <textarea id="descripcion" placeholder="Descripción"></textarea>
+
+        <input type="file" id="imagen" accept="image/*">
+        <img id="preview" class="preview">
+
+        <button class="btn-guardar" id="guardar">Guardar Producto</button>
+        <button class="btn-cancelar" id="cancelar">Cancelar edición</button>
+    </div>
+
+    <h2>Productos cargados</h2>
+    <div class="grid" id="lista-productos"></div>
+
+</div>
+
+<script>
+const clave = prompt("Ingrese clave de administrador:");
+
+if (clave !== "vivero123") {
+    alert("Clave incorrecta");
+    window.location.href = "index.html";
+}
+</script>
+
+<script type="module">
+
+import { db } from "./js/firebase.js";
+
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  updateDoc,
+  doc,
+  serverTimestamp,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const nombreInput = document.getElementById("nombre");
+const precioInput = document.getElementById("precio");
+const descripcionInput = document.getElementById("descripcion");
+const imagenInput = document.getElementById("imagen");
+const preview = document.getElementById("preview");
+const guardarBtn = document.getElementById("guardar");
+const cancelarBtn = document.getElementById("cancelar");
+const lista = document.getElementById("lista-productos");
+const tituloForm = document.getElementById("titulo-form");
+
+let editandoId = null;
+let imagenActual = "";
+
+imagenInput.addEventListener("change", () => {
+    const archivo = imagenInput.files[0];
+    if(!archivo) return;
+
+    const lector = new FileReader();
+    lector.onload = e => {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+    };
+    lector.readAsDataURL(archivo);
+});
+
+async function subirImagen(archivo){
+    const formData = new FormData();
+    formData.append("imagen", archivo);
+
+    const respuesta = await fetch("http://localhost:3000/subir-imagen", {
+        method:"POST",
+        body:formData
+    });
+
+    const datos = await respuesta.json();
+
+    if(!datos.ok){
+        throw new Error("Error al subir imagen");
+    }
+
+    return datos.imagenUrl;
+}
+
+guardarBtn.addEventListener("click", async () => {
+    try{
+        const nombre = nombreInput.value.trim();
+        const precio = Number(precioInput.value);
+        const descripcion = descripcionInput.value.trim();
+        const archivo = imagenInput.files[0];
+
+        if(!nombre || !precio){
+            alert("Completá nombre y precio");
+            return;
+        }
+
+        let imagenUrl = imagenActual;
+
+        if(archivo){
+            imagenUrl = await subirImagen(archivo);
+        }
+
+        if(!imagenUrl){
+            alert("Seleccioná una imagen");
+            return;
+        }
+
+        if(editandoId){
+            await updateDoc(doc(db,"productos",editandoId), {
+                nombre,
+                precio,
+                descripcion,
+                imagen: imagenUrl,
+                actualizado: serverTimestamp()
+            });
+
+            alert("Producto actualizado correctamente");
+        }else{
+            await addDoc(collection(db,"productos"), {
+                nombre,
+                precio,
+                descripcion,
+                imagen: imagenUrl,
+                createdAt: serverTimestamp()
+            });
+
+            alert("Producto guardado correctamente");
+        }
+
+        limpiarFormulario();
+        cargarProductos();
+
+    }catch(error){
+        console.error(error);
+        alert("Error al guardar producto");
+    }
+});
+
+async function cargarProductos(){
+    lista.innerHTML = "Cargando productos...";
+
+    const q = query(collection(db,"productos"), orderBy("createdAt","desc"));
+    const snapshot = await getDocs(q);
+
+    lista.innerHTML = "";
+
+    snapshot.forEach(documento => {
+        const p = documento.data();
+        const id = documento.id;
+
+        lista.innerHTML += `
+            <div class="card">
+                <img src="${p.imagen}" alt="${p.nombre}">
+                <div class="card-info">
+                    <h3>${p.nombre}</h3>
+                    <div class="precio">$${p.precio}</div>
+                    <p>${p.descripcion || ""}</p>
+
+                    <div class="acciones">
+                        <button class="btn-editar" data-id="${id}">Editar</button>
+                        <button class="btn-eliminar" data-id="${id}">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    activarBotones();
+}
+
+function activarBotones(){
+    document.querySelectorAll(".btn-eliminar").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+
+            if(confirm("¿Seguro que querés eliminar este producto?")){
+                await deleteDoc(doc(db,"productos",id));
+                cargarProductos();
+            }
+        });
+    });
+
+    document.querySelectorAll(".btn-editar").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+
+            const snapshot = await getDocs(collection(db,"productos"));
+
+            snapshot.forEach(documento => {
+                if(documento.id === id){
+                    const p = documento.data();
+
+                    editandoId = id;
+                    imagenActual = p.imagen;
+
+                    nombreInput.value = p.nombre;
+                    precioInput.value = p.precio;
+                    descripcionInput.value = p.descripcion || "";
+
+                    preview.src = p.imagen;
+                    preview.style.display = "block";
+
+                    tituloForm.innerText = "Editar Producto";
+                    guardarBtn.innerText = "Actualizar Producto";
+                    cancelarBtn.style.display = "block";
+
+                    window.scrollTo({top:0, behavior:"smooth"});
+                }
+            });
+        });
+    });
+}
+
+cancelarBtn.addEventListener("click", limpiarFormulario);
+
+function limpiarFormulario(){
+    editandoId = null;
+    imagenActual = "";
+
+    nombreInput.value = "";
+    precioInput.value = "";
+    descripcionInput.value = "";
+    imagenInput.value = "";
+
+    preview.src = "";
+    preview.style.display = "none";
+
+    tituloForm.innerText = "Agregar Producto";
+    guardarBtn.innerText = "Guardar Producto";
+    cancelarBtn.style.display = "none";
+}
+
+cargarProductos();
+
+</script>
+
+</body>
+</html>

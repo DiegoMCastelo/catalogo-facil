@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo Vivero</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f6ef;
+    color:#1f2d1f;
+}
+
+.hero{
+    background:linear-gradient(135deg,#143d22,#2f6b3c);
+    color:white;
+    padding:60px 20px;
+    text-align:center;
+}
+
+.hero h1{
+    font-size:46px;
+    margin:0;
+}
+
+.hero p{
+    font-size:20px;
+    margin:15px 0 25px;
+}
+
+.hero a{
+    background:#25D366;
+    color:white;
+    padding:14px 24px;
+    border-radius:30px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.filtros{
+    max-width:1100px;
+    margin:-25px auto 20px;
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+    display:grid;
+    grid-template-columns:1fr 220px;
+    gap:15px;
+}
+
+.filtros input,
+.filtros select{
+    padding:14px;
+    border-radius:12px;
+    border:1px solid #ccc;
+    font-size:16px;
+}
+
+.catalogo{
+    max-width:1200px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:24px;
+    padding:25px;
+}
+
+.producto{
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 8px 22px rgba(0,0,0,.12);
+    transition:.25s;
+}
+
+.producto:hover{
+    transform:translateY(-5px);
+}
+
+.producto img{
+    width:100%;
+    height:240px;
+    object-fit:cover;
+}
+
+.info{
+    padding:18px;
+}
+
+.categoria{
+    display:inline-block;
+    background:#e6f2e6;
+    color:#24552d;
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.precio{
+    font-size:26px;
+    font-weight:bold;
+    color:#24552d;
+    margin:10px 0;
+}
+
+.whatsapp{
+    display:block;
+    margin-top:14px;
+    padding:13px;
+    background:#25D366;
+    color:white;
+    text-decoration:none;
+    text-align:center;
+    border-radius:12px;
+    font-weight:bold;
+}
+
+.wsp-flotante{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    background:#25D366;
+    color:white;
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-decoration:none;
+    font-size:30px;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+
+@media(max-width:700px){
+    .hero h1{
+        font-size:34px;
+    }
+
+    .filtros{
+        grid-template-columns:1fr;
+        margin:-20px 15px 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<section class="hero">
+    <h1>Vivero Castelo</h1>
+    <p>Plantas, macetas y deco para transformar tus espacios</p>
+    <a href="https://wa.me/5493510000000" target="_blank">Consultar por WhatsApp</a>
+</section>
+
+<section class="filtros">
+    <input type="text" id="buscador" placeholder="Buscar planta, maceta o producto...">
+
+    <select id="categoriaFiltro">
+        <option value="">Todas las categorías</option>
+        <option value="Interior">Interior</option>
+        <option value="Exterior">Exterior</option>
+        <option value="Macetas">Macetas</option>
+        <option value="Sustratos">Sustratos</option>
+        <option value="Promociones">Promociones</option>
+        <option value="Decoración">Decoración</option>
+    </select>
+</section>
+
+<main class="catalogo" id="catalogo">
+    Cargando productos...
+</main>
+
+<a class="wsp-flotante" href="https://wa.me/5493510000000" target="_blank">☘</a>
+
+<script type="module">
+import { db } from "./js/firebase.js";
+
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const catalogo = document.getElementById("catalogo");
+const buscador = document.getElementById("buscador");
+const categoriaFiltro = document.getElementById("categoriaFiltro");
+
+let productos = [];
+
+async function cargarProductos(){
+    catalogo.innerHTML = "Cargando productos...";
+
+    const q = query(collection(db,"productos"), orderBy("createdAt","desc"));
+    const snapshot = await getDocs(q);
+
+    productos = [];
+
+    snapshot.forEach(doc => {
+        productos.push(doc.data());
+    });
+
+    mostrarProductos(productos);
+}
+
+function mostrarProductos(lista){
+    catalogo.innerHTML = "";
+
+    if(lista.length === 0){
+        catalogo.innerHTML = "<p>No hay productos para mostrar.</p>";
+        return;
+    }
+
+    lista.forEach(p => {
+        const mensaje = encodeURIComponent(
+            `Hola, quiero consultar por ${p.nombre} - $${p.precio}`
+        );
+
+        catalogo.innerHTML += `
+            <div class="producto">
+                <img src="${p.imagen}" alt="${p.nombre}">
+                <div class="info">
+                    <span class="categoria">${p.categoria || "Vivero"}</span>
+                    <h2>${p.nombre}</h2>
+                    <div class="precio">$${p.precio}</div>
+                    <p>${p.descripcion || ""}</p>
+                    <a class="whatsapp" target="_blank"
+                       href="https://wa.me/5493510000000?text=${mensaje}">
+                       Consultar por WhatsApp
+                    </a>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function filtrar(){
+    const texto = buscador.value.toLowerCase();
+    const categoria = categoriaFiltro.value;
+
+    const filtrados = productos.filter(p => {
+        const coincideTexto =
+            (p.nombre || "").toLowerCase().includes(texto) ||
+            (p.descripcion || "").toLowerCase().includes(texto);
+
+        const coincideCategoria =
+            categoria === "" || p.categoria === categoria;
+
+        return coincideTexto && coincideCategoria;
+    });
+
+    mostrarProductos(filtrados);
+}
+
+buscador.addEventListener("input", filtrar);
+categoriaFiltro.addEventListener("change", filtrar);
+
+cargarProductos();
+</script>
+
+</body>
+</html>
