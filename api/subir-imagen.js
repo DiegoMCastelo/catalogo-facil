@@ -3,7 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 cloudinary.config({
   cloud_name: "dzxqltjeq",
   api_key: "236469146362133",
-  api_secret: "TU_API_SECRET"
+  api_secret: "c6Om8s6Aca6mmAYF9OayK09r1nU"
 });
 
 export default async function handler(req, res) {

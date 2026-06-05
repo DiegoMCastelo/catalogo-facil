@@ -138,7 +138,7 @@ button{
   id="imagen"
   accept="image/*"
   capture="environment">
-  
+
         <img id="preview" class="preview">
 
         <button class="btn-guardar" id="guardar">Guardar Producto</button>
@@ -201,12 +201,17 @@ imagenInput.addEventListener("change", () => {
 });
 
 async function subirImagen(archivo){
-    const formData = new FormData();
-    formData.append("imagen", archivo);
+
+    const base64 = await convertirABase64(archivo);
 
     const respuesta = await fetch("/api/subir-imagen", {
         method:"POST",
-        body:formData
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            imagen: base64
+        })
     });
 
     const datos = await respuesta.json();
@@ -216,6 +221,28 @@ async function subirImagen(archivo){
     }
 
     return datos.imagenUrl;
+}
+
+function convertirABase64(archivo){
+    return new Promise((resolve, reject) => {
+        const lector = new FileReader();
+
+        lector.onload = () => resolve(lector.result);
+        lector.onerror = error => reject(error);
+
+        lector.readAsDataURL(archivo);
+    });
+}
+
+function convertirABase64(archivo){
+    return new Promise((resolve, reject) => {
+        const lector = new FileReader();
+
+        lector.onload = () => resolve(lector.result);
+        lector.onerror = error => reject(error);
+
+        lector.readAsDataURL(archivo);
+    });
 }
 
 guardarBtn.addEventListener("click", async () => {
