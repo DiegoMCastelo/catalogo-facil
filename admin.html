@@ -255,9 +255,33 @@ async function subirImagen(archivo){
 
 function convertirABase64(archivo){
     return new Promise((resolve, reject) => {
+        const img = new Image();
         const lector = new FileReader();
-        lector.onload = () => resolve(lector.result);
-        lector.onerror = error => reject(error);
+
+        lector.onload = e => {
+            img.src = e.target.result;
+        };
+
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+
+            const maxAncho = 1200;
+            const escala = maxAncho / img.width;
+
+            canvas.width = maxAncho;
+            canvas.height = img.height * escala;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const imagenReducida = canvas.toDataURL("image/jpeg", 0.75);
+
+            resolve(imagenReducida);
+        };
+
+        img.onerror = reject;
+        lector.onerror = reject;
+
         lector.readAsDataURL(archivo);
     });
 }
