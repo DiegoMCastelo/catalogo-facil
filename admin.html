@@ -120,7 +120,7 @@ button{
 <body>
 
 <header>
-    <h1>Panel Admin - App Vivero</h1>
+    <h1>Panel Admin NUEVO - App Vivero</h1>
     <p>Cargar, editar y eliminar productos</p>
 </header>
 
@@ -267,11 +267,16 @@ guardarBtn.addEventListener("click", async () => {
     }
 });
 
+
 async function cargarProductos(){
+
+    console.log("Cargando productos...");
+
     lista.innerHTML = "Cargando productos...";
 
-    const q = query(collection(db,"productos"), orderBy("createdAt","desc"));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(collection(db,"productos"));
+
+    console.log("Cantidad:", snapshot.size);
 
     lista.innerHTML = "";
 
