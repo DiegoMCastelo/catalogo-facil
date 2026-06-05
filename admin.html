@@ -114,6 +114,19 @@ button{
     background:#d93025;
     color:white;
 }
+
+.btn-foto{
+    display:block;
+    background:#2f6b3c;
+    color:white;
+    text-align:center;
+    padding:14px;
+    border-radius:12px;
+    font-weight:bold;
+    margin:10px 0;
+    cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -133,11 +146,14 @@ button{
         <input type="number" id="precio" placeholder="Precio">
         <textarea id="descripcion" placeholder="Descripción"></textarea>
 
-        <input
+        <label class="btn-foto" for="imagen">📷 Sacar foto / elegir imagen</label>
+
+<input
   type="file"
   id="imagen"
   accept="image/*"
-  capture="environment">
+  capture="environment"
+  style="display:none;">
 
         <img id="preview" class="preview">
 
@@ -151,11 +167,15 @@ button{
 </div>
 
 <script>
-const clave = prompt("Ingrese clave de administrador:");
+if (sessionStorage.getItem("adminOK") !== "true") {
+    const clave = prompt("Ingrese clave de administrador:");
 
-if (clave !== "vivero123") {
-    alert("Clave incorrecta");
-    window.location.href = "index.html";
+    if (clave === "vivero123") {
+        sessionStorage.setItem("adminOK", "true");
+    } else {
+        alert("Clave incorrecta");
+        window.location.href = "index.html";
+    }
 }
 </script>
 
