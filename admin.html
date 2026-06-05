@@ -133,7 +133,12 @@ button{
         <input type="number" id="precio" placeholder="Precio">
         <textarea id="descripcion" placeholder="Descripción"></textarea>
 
-        <input type="file" id="imagen" accept="image/*">
+        <input
+  type="file"
+  id="imagen"
+  accept="image/*"
+  capture="environment">
+  
         <img id="preview" class="preview">
 
         <button class="btn-guardar" id="guardar">Guardar Producto</button>
@@ -199,7 +204,7 @@ async function subirImagen(archivo){
     const formData = new FormData();
     formData.append("imagen", archivo);
 
-    const respuesta = await fetch("http://localhost:3000/subir-imagen", {
+    const respuesta = await fetch("/api/subir-imagen", {
         method:"POST",
         body:formData
     });
