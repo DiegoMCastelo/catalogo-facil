@@ -244,13 +244,21 @@ async function subirImagen(archivo){
         })
     });
 
-    const datos = await respuesta.json();
+    const texto = await respuesta.text();
 
-    if(!datos.ok){
-        throw new Error("Error al subir imagen");
-    }
+let datos;
 
-    return datos.imagenUrl;
+try{
+    datos = JSON.parse(texto);
+}catch(error){
+    throw new Error(texto);
+}
+
+if(!datos.ok){
+    throw new Error(datos.error || "Error al subir imagen");
+}
+
+return datos.imagenUrl;
 }
 
 function convertirABase64(archivo){
