@@ -50,6 +50,20 @@ button{
     font-weight:bold;
 }
 
+.btn-foto{
+    display:block;
+    width:100%;
+    background:#2f6b3c;
+    color:white;
+    text-align:center;
+    padding:14px;
+    border-radius:12px;
+    font-weight:bold;
+    margin:10px 0;
+    cursor:pointer;
+    box-sizing:border-box;
+}
+
 .btn-guardar{
     background:#214d2b;
     color:white;
@@ -114,47 +128,13 @@ button{
     background:#d93025;
     color:white;
 }
-
-.btn-foto{
-    display:block;
-    background:#2f6b3c;
-    color:white;
-    text-align:center;
-    padding:14px;
-    border-radius:12px;
-    font-weight:bold;
-    margin:10px 0;
-    cursor:pointer;
-}
-.btn-foto{
-    display:block;
-    width:100%;
-    background:#2f6b3c;
-    color:white;
-    text-align:center;
-    padding:14px;
-    border-radius:12px;
-    font-weight:bold;
-    margin:10px 0;
-    cursor:pointer;
-    box-sizing:border-box;
-}
-
-.preview{
-    width:100%;
-    max-height:300px;
-    object-fit:cover;
-    border-radius:14px;
-    display:none;
-    margin:10px 0;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-    <h1>Panel Admin NUEVO - App Vivero</h1>
+    <h1>Panel Admin - App Vivero</h1>
     <p>Cargar, editar y eliminar productos</p>
 </header>
 
@@ -167,40 +147,27 @@ button{
         <input type="number" id="precio" placeholder="Precio">
         <textarea id="descripcion" placeholder="Descripción"></textarea>
 
-      <label for="imagen" class="btn-foto">
-    📷 Sacar foto / elegir imagen
-</label>
+        <label for="imagen" class="btn-foto">
+            📷 Sacar foto / elegir imagen
+        </label>
 
-<input
-    type="file"
-    id="imagen"
-    accept="image/*"
-    capture="environment"
-    style="display:none;"
->
-
-<img id="preview" class="preview">
-
-<button class="btn-guardar" id="guardar">
-    Guardar Producto
-</button>
-
-<button class="btn-cancelar" id="cancelar">
-    Cancelar edición
-</button>
-
-
-<input
-  type="file"
-  id="imagen"
-  accept="image/*"
-  capture="environment"
-  style="display:none;">
+        <input
+            type="file"
+            id="imagen"
+            accept="image/*"
+            capture="environment"
+            style="display:none;"
+        >
 
         <img id="preview" class="preview">
 
-        <button class="btn-guardar" id="guardar">Guardar Producto</button>
-        <button class="btn-cancelar" id="cancelar">Cancelar edición</button>
+        <button class="btn-guardar" id="guardar">
+            Guardar Producto
+        </button>
+
+        <button class="btn-cancelar" id="cancelar">
+            Cancelar edición
+        </button>
     </div>
 
     <h2>Productos cargados</h2>
@@ -222,7 +189,6 @@ if (sessionStorage.getItem("adminOK") !== "true") {
 </script>
 
 <script type="module">
-
 import { db } from "./js/firebase.js";
 
 import {
@@ -232,9 +198,7 @@ import {
   deleteDoc,
   updateDoc,
   doc,
-  serverTimestamp,
-  query,
-  orderBy
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const nombreInput = document.getElementById("nombre");
@@ -252,18 +216,22 @@ let imagenActual = "";
 
 imagenInput.addEventListener("change", () => {
     const archivo = imagenInput.files[0];
-    if(!archivo) return;
+
+    if(!archivo){
+        return;
+    }
 
     const lector = new FileReader();
+
     lector.onload = e => {
         preview.src = e.target.result;
         preview.style.display = "block";
     };
+
     lector.readAsDataURL(archivo);
 });
 
 async function subirImagen(archivo){
-
     const base64 = await convertirABase64(archivo);
 
     const respuesta = await fetch("/api/subir-imagen", {
@@ -288,28 +256,17 @@ async function subirImagen(archivo){
 function convertirABase64(archivo){
     return new Promise((resolve, reject) => {
         const lector = new FileReader();
-
         lector.onload = () => resolve(lector.result);
         lector.onerror = error => reject(error);
-
-        lector.readAsDataURL(archivo);
-    });
-}
-
-function convertirABase64(archivo){
-    return new Promise((resolve, reject) => {
-        const lector = new FileReader();
-
-        lector.onload = () => resolve(lector.result);
-        lector.onerror = error => reject(error);
-
         lector.readAsDataURL(archivo);
     });
 }
 
 guardarBtn.addEventListener("click", async () => {
-    alert("Botón guardar presionado");
     try{
+        guardarBtn.disabled = true;
+        guardarBtn.innerText = "Guardando...";
+
         const nombre = nombreInput.value.trim();
         const precio = Number(precioInput.value);
         const descripcion = descripcionInput.value.trim();
@@ -317,6 +274,8 @@ guardarBtn.addEventListener("click", async () => {
 
         if(!nombre || !precio){
             alert("Completá nombre y precio");
+            guardarBtn.disabled = false;
+            guardarBtn.innerText = editandoId ? "Actualizar Producto" : "Guardar Producto";
             return;
         }
 
@@ -328,6 +287,8 @@ guardarBtn.addEventListener("click", async () => {
 
         if(!imagenUrl){
             alert("Seleccioná una imagen");
+            guardarBtn.disabled = false;
+            guardarBtn.innerText = editandoId ? "Actualizar Producto" : "Guardar Producto";
             return;
         }
 
@@ -358,20 +319,17 @@ guardarBtn.addEventListener("click", async () => {
 
     }catch(error){
         console.error(error);
-        alert("Error al guardar producto");
+        alert("Error al guardar producto: " + error.message);
     }
+
+    guardarBtn.disabled = false;
+    guardarBtn.innerText = editandoId ? "Actualizar Producto" : "Guardar Producto";
 });
 
-
 async function cargarProductos(){
-
-    console.log("Cargando productos...");
-
     lista.innerHTML = "Cargando productos...";
 
     const snapshot = await getDocs(collection(db,"productos"));
-
-    console.log("Cantidad:", snapshot.size);
 
     lista.innerHTML = "";
 
@@ -462,7 +420,6 @@ function limpiarFormulario(){
 }
 
 cargarProductos();
-
 </script>
 
 </body>
