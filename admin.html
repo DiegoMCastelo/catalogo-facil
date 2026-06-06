@@ -128,6 +128,22 @@ button{
     background:#d93025;
     color:white;
 }
+
+.galeria-admin{
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    padding:5px;
+}
+
+.galeria-admin img{
+    width:90px;
+    height:90px;
+    object-fit:cover;
+    border-radius:8px;
+    flex-shrink:0;
+}
+
 </style>
 </head>
 
@@ -395,21 +411,29 @@ async function cargarProductos(){
         const p = documento.data();
         const id = documento.id;
 
-        lista.innerHTML += `
-            <div class="card">
-                <img src="${p.imagen}" alt="${p.nombre}">
-                <div class="card-info">
-                    <h3>${p.nombre}</h3>
-                    <div class="precio">$${p.precio}</div>
-                    <p>${p.descripcion || ""}</p>
+       lista.innerHTML += `
+    <div class="card">
 
-                    <div class="acciones">
-                        <button class="btn-editar" data-id="${id}">Editar</button>
-                        <button class="btn-eliminar" data-id="${id}">Eliminar</button>
-                    </div>
-                </div>
+        <div class="galeria-admin">
+            ${(p.imagenes || [p.imagen]).map(img => `
+                <img src="${img}" alt="${p.nombre}">
+            `).join("")}
+        </div>
+
+        <div class="card-info">
+            <h3>${p.nombre}</h3>
+            <div class="precio">$${p.precio}</div>
+            <p>${p.descripcion || ""}</p>
+
+            <div class="acciones">
+                <button class="btn-editar" data-id="${id}">Editar</button>
+                <button class="btn-eliminar" data-id="${id}">Eliminar</button>
             </div>
-        `;
+        </div>
+
+    </div>
+`;
+
     });
 
     activarBotones();
