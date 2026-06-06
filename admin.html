@@ -247,8 +247,7 @@ const tituloForm = document.getElementById("titulo-form");
 let editandoId = null;
 let imagenActual = "";
 
-imagenInput.addEventListener("change", () => {
-    const archivos = imagenInput.files;
+function mostrarPreview(archivos) {
 
     if (!archivos || archivos.length === 0) {
         return;
@@ -258,9 +257,11 @@ imagenInput.addEventListener("change", () => {
     preview.style.display = "flex";
 
     Array.from(archivos).forEach(archivo => {
+
         const lector = new FileReader();
 
         lector.onload = e => {
+
             const img = document.createElement("img");
 
             img.src = e.target.result;
@@ -274,7 +275,16 @@ imagenInput.addEventListener("change", () => {
         };
 
         lector.readAsDataURL(archivo);
+
     });
+}
+
+imagenInput.addEventListener("change", () => {
+    mostrarPreview(imagenInput.files);
+});
+
+camaraInput.addEventListener("change", () => {
+    mostrarPreview(camaraInput.files);
 });
 
 async function subirImagen(archivo){
