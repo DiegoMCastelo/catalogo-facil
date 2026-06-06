@@ -359,7 +359,10 @@ guardarBtn.addEventListener("click", async () => {
         const nombre = nombreInput.value.trim();
         const precio = Number(precioInput.value);
         const descripcion = descripcionInput.value.trim();
-        const archivos = imagenInput.files;
+        const archivosGaleria = imagenInput.files;
+const archivosCamara = camaraInput.files;
+
+const archivos = archivosGaleria.length > 0 ? archivosGaleria : archivosCamara;
 
         if (!nombre || !precio) {
             alert("Completá nombre y precio");
