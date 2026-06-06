@@ -152,14 +152,14 @@ button{
         </label>
 
         <input
-            type="file"
-            id="imagen"
-            accept="image/*"
-            capture="environment"
-            style="display:none;"
-        >
+    type="file"
+    id="imagen"
+    accept="image/*"
+    multiple
+    style="display:none;"
+>
 
-        <img id="preview" class="preview">
+        <div id="preview" class="preview"></div>
 
         <button class="btn-guardar" id="guardar">
             Guardar Producto
@@ -215,20 +215,33 @@ let editandoId = null;
 let imagenActual = "";
 
 imagenInput.addEventListener("change", () => {
-    const archivo = imagenInput.files[0];
+    const archivos = imagenInput.files;
 
-    if(!archivo){
+    if (!archivos || archivos.length === 0) {
         return;
     }
 
-    const lector = new FileReader();
+    preview.innerHTML = "";
+    preview.style.display = "flex";
 
-    lector.onload = e => {
-        preview.src = e.target.result;
-        preview.style.display = "block";
-    };
+    Array.from(archivos).forEach(archivo => {
+        const lector = new FileReader();
 
-    lector.readAsDataURL(archivo);
+        lector.onload = e => {
+            const img = document.createElement("img");
+
+            img.src = e.target.result;
+            img.style.width = "110px";
+            img.style.height = "110px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "12px";
+            img.style.margin = "6px";
+
+            preview.appendChild(img);
+        };
+
+        lector.readAsDataURL(archivo);
+    });
 });
 
 async function subirImagen(archivo){
@@ -295,51 +308,64 @@ function convertirABase64(archivo){
 }
 
 guardarBtn.addEventListener("click", async () => {
-    try{
+    try {
         guardarBtn.disabled = true;
         guardarBtn.innerText = "Guardando...";
 
         const nombre = nombreInput.value.trim();
         const precio = Number(precioInput.value);
         const descripcion = descripcionInput.value.trim();
-        const archivo = imagenInput.files[0];
+        const archivos = imagenInput.files;
 
-        if(!nombre || !precio){
+        if (!nombre || !precio) {
             alert("Completá nombre y precio");
             guardarBtn.disabled = false;
             guardarBtn.innerText = editandoId ? "Actualizar Producto" : "Guardar Producto";
             return;
         }
 
+        let imagenes = [];
         let imagenUrl = imagenActual;
 
-        if(archivo){
-            imagenUrl = await subirImagen(archivo);
+        if (archivos && archivos.length > 0) {
+            for (let i = 0; i < archivos.length; i++) {
+                const url = await subirImagen(archivos[i]);
+                imagenes.push(url);
+            }
+
+            imagenUrl = imagenes[0] || "";
         }
 
-        if(!imagenUrl){
+        if (!imagenUrl) {
             alert("Seleccioná una imagen");
             guardarBtn.disabled = false;
             guardarBtn.innerText = editandoId ? "Actualizar Producto" : "Guardar Producto";
             return;
         }
 
-        if(editandoId){
-            await updateDoc(doc(db,"productos",editandoId), {
+        if (editandoId) {
+            const datosActualizar = {
                 nombre,
                 precio,
                 descripcion,
                 imagen: imagenUrl,
                 actualizado: serverTimestamp()
-            });
+            };
+
+            if (imagenes.length > 0) {
+                datosActualizar.imagenes = imagenes;
+            }
+
+            await updateDoc(doc(db, "productos", editandoId), datosActualizar);
 
             alert("Producto actualizado correctamente");
-        }else{
-            await addDoc(collection(db,"productos"), {
+        } else {
+            await addDoc(collection(db, "productos"), {
                 nombre,
                 precio,
                 descripcion,
                 imagen: imagenUrl,
+                imagenes: imagenes,
                 createdAt: serverTimestamp()
             });
 
@@ -349,7 +375,7 @@ guardarBtn.addEventListener("click", async () => {
         limpiarFormulario();
         cargarProductos();
 
-    }catch(error){
+    } catch (error) {
         console.error(error);
         alert("Error al guardar producto: " + error.message);
     }
