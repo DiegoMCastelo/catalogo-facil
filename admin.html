@@ -163,11 +163,27 @@ button{
         <input type="number" id="precio" placeholder="Precio">
         <textarea id="descripcion" placeholder="Descripción"></textarea>
 
-        <label for="imagen" class="btn-foto">
-            📷 Sacar foto / elegir imagen
-        </label>
+       <div class="acciones-fotos">
 
-        <input
+    <label for="camara" class="btn-foto">
+        📷 Sacar foto
+    </label>
+
+    <label for="imagen" class="btn-foto">
+        🖼️ Elegir de galería
+    </label>
+
+</div>
+
+<input
+    type="file"
+    id="camara"
+    accept="image/*"
+    capture="environment"
+    style="display:none;"
+>
+
+<input
     type="file"
     id="imagen"
     accept="image/*"
@@ -222,6 +238,7 @@ const precioInput = document.getElementById("precio");
 const descripcionInput = document.getElementById("descripcion");
 const imagenInput = document.getElementById("imagen");
 const preview = document.getElementById("preview");
+const camaraInput = document.getElementById("camara");
 const guardarBtn = document.getElementById("guardar");
 const cancelarBtn = document.getElementById("cancelar");
 const lista = document.getElementById("lista-productos");
