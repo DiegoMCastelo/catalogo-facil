@@ -6,14 +6,8 @@
 <title>Admin - App Vivero</title>
 
 <style>
-body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#eef4ec;
-    color:#1e2f1e;
-}
-
 html, body {
+    width: 100%;
     max-width: 100%;
     overflow-x: hidden;
 }
@@ -22,19 +16,11 @@ html, body {
     box-sizing: border-box;
 }
 
-select {
-    width: 100%;
-    padding: 13px;
-    margin: 8px 0;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.preview {
-    overflow-x: auto;
-    max-width: 100%;
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef4ec;
+    color:#1e2f1e;
 }
 
 header{
@@ -58,7 +44,7 @@ header{
     margin-bottom:30px;
 }
 
-input, textarea, button{
+input, textarea, select, button{
     width:100%;
     padding:13px;
     margin:8px 0;
@@ -102,7 +88,7 @@ button{
 .preview{
     width:100%;
     max-height:300px;
-    object-fit:cover;
+    overflow-x:auto;
     border-radius:14px;
     display:none;
     margin:10px 0;
@@ -141,7 +127,7 @@ button{
     display:flex;
     gap:10px;
     margin-top:12px;
-    flex-wrap: wrap;
+    flex-wrap:wrap;
 }
 
 .acciones button{
@@ -173,18 +159,19 @@ button{
     border-radius:8px;
     flex-shrink:0;
 }
-.categoria-admin {
-    display: inline-block;
-    margin: 8px 0;
-    padding: 6px 12px;
-    border-radius: 20px;
-    background: #eef6ee;
-    color: #2f6b3f;
-    font-size: 13px;
-    font-weight: 600;
-}
 
+.categoria-admin {
+    display:inline-block;
+    margin:8px 0;
+    padding:6px 12px;
+    border-radius:20px;
+    background:#eef6ee;
+    color:#2f6b3f;
+    font-size:13px;
+    font-weight:600;
+}
 </style>
+
 </head>
 
 <body>
@@ -205,12 +192,14 @@ button{
 
         <!-- NUEVO -->
         <select id="categoria">
-            <option value="Plantas">🌿 Plantas</option>
-            <option value="Macetas">🏺 Macetas</option>
-            <option value="Tutores">🎋 Tutores</option>
-            <option value="Fertilizantes">🌱 Fertilizantes</option>
-            <option value="Promociones">🔥 Promociones</option>
-            <option value="Destacadas">⭐ Destacadas</option>
+<option value="Plantas Interior">🌿 Plantas Interior</option>
+<option value="Plantas Exterior">🌳 Plantas Exterior</option>
+<option value="Macetas">🏺 Macetas</option>
+<option value="Fertilizantes">🌱 Fertilizantes</option>
+<option value="Plantas Artificiales">🍃 Plantas Artificiales</option>
+<option value="Budas y Fuentes">🧘 Budas y Fuentes</option>
+<option value="Herbolaria">🌾 Herbolaria</option>
+<option value="Promociones">🔥 Promociones</option>
         </select>
 
        <div class="acciones-fotos">
