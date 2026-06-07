@@ -265,16 +265,18 @@ catalogo.innerHTML += `
 }
 
 function filtrar(){
-    const texto = buscador.value.toLowerCase();
-    const categoria = categoriaFiltro.value;
+    const texto = buscador.value.toLowerCase().trim();
+    const categoria = categoriaFiltro.value.trim();
 
     const filtrados = productos.filter(p => {
         const coincideTexto =
             (p.nombre || "").toLowerCase().includes(texto) ||
             (p.descripcion || "").toLowerCase().includes(texto);
 
+        const categoriaProducto = (p.categoria || "").trim();
+
         const coincideCategoria =
-            categoria === "" || p.categoria === categoria;
+            categoria === "" || categoriaProducto === categoria;
 
         return coincideTexto && coincideCategoria;
     });
