@@ -421,7 +421,7 @@ const archivos = archivosGaleria.length > 0 ? archivosGaleria : archivosCamara;
     nombre,
     precio,
     descripcion,
-    categoria: document.getElementById("categoria").value,
+    categoria: document.getElementById("categoria")?.value || "Plantas",
     imagen: imagenUrl,
     imagenes: imagenes,
     createdAt: serverTimestamp()
