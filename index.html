@@ -160,6 +160,38 @@ body{
     border-radius:12px;
     flex-shrink:0;
 }
+
+.foto-producto{
+    cursor:pointer;
+}
+
+.visor-imagen{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.9);
+    z-index:9999;
+    justify-content:center;
+    align-items:center;
+}
+
+.visor-imagen img{
+    max-width:92%;
+    max-height:88%;
+    border-radius:14px;
+    object-fit:contain;
+}
+
+.visor-imagen span{
+    position:absolute;
+    top:18px;
+    right:24px;
+    color:white;
+    font-size:36px;
+    cursor:pointer;
+}
+
+
 </style>
 </head>
 
@@ -245,7 +277,12 @@ catalogo.innerHTML += `
 
         <div class="galeria-producto">
             ${(p.imagenes || [p.imagen]).map(img => `
-                <img src="${img}" alt="${p.nombre}">
+                <img
+    src="${img}"
+    alt="${p.nombre}"
+    class="foto-producto"
+    onclick="abrirImagen('${img}')"
+>
             `).join("")}
         </div>
 
@@ -287,8 +324,21 @@ function filtrar(){
 buscador.addEventListener("input", filtrar);
 categoriaFiltro.addEventListener("change", filtrar);
 
+window.abrirImagen = function(url){
+    document.getElementById("visorImagen").style.display = "flex";
+    document.getElementById("imagenGrande").src = url;
+}
+
+window.cerrarImagen = function(){
+    document.getElementById("visorImagen").style.display = "none";
+}
+
 cargarProductos();
 </script>
+<div id="visorImagen" class="visor-imagen">
+    <span onclick="cerrarImagen()">✕</span>
+    <img id="imagenGrande">
+</div>
 
 </body>
 </html>
