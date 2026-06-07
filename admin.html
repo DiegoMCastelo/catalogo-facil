@@ -410,36 +410,37 @@ const archivos = archivosGaleria.length > 0 ? archivosGaleria : archivosCamara;
             return;
         }
 
-        if (editandoId) {
-            const datosActualizar = {
-                nombre,
-                precio,
-                descripcion,
-                imagen: imagenUrl,
-                actualizado: serverTimestamp()
-            };
+       if (editandoId) {
+    const datosActualizar = {
+        nombre,
+        precio,
+        descripcion,
+        categoria: document.getElementById("categoria")?.value || "Plantas Interior",
+        imagen: imagenUrl,
+        actualizado: serverTimestamp()
+    };
 
-            if (imagenes.length > 0) {
-                datosActualizar.imagenes = imagenes;
-            }
+    if (imagenes.length > 0) {
+        datosActualizar.imagenes = imagenes;
+    }
 
-            await updateDoc(doc(db, "productos", editandoId), datosActualizar);
+    await updateDoc(doc(db, "productos", editandoId), datosActualizar);
 
-            alert("Producto actualizado correctamente");
-        } else {
-            await addDoc(collection(db, "productos"), {
-    nombre,
-    precio,
-    descripcion,
-    categoria: document.getElementById("categoria")?.value || "Plantas",
-    imagen: imagenUrl,
-    imagenes: imagenes,
-    createdAt: serverTimestamp()
-});
+    alert("Producto actualizado correctamente");
 
-            alert("Producto guardado correctamente");
-        }
+} else {
+    await addDoc(collection(db, "productos"), {
+        nombre,
+        precio,
+        descripcion,
+        categoria: document.getElementById("categoria")?.value || "Plantas Interior",
+        imagen: imagenUrl,
+        imagenes: imagenes,
+        createdAt: serverTimestamp()
+    });
 
+    alert("Producto guardado correctamente");
+}
         limpiarFormulario();
         cargarProductos();
 
@@ -492,8 +493,6 @@ async function cargarProductos(){
     `;
 });
 
-    });
-
     activarBotones();
 }
 
@@ -525,6 +524,7 @@ function activarBotones(){
                     nombreInput.value = p.nombre;
                     precioInput.value = p.precio;
                     descripcionInput.value = p.descripcion || "";
+                    document.getElementById("categoria").value = p.categoria || "Plantas Interior";
 
                     preview.src = p.imagen;
                     preview.style.display = "block";
@@ -563,4 +563,5 @@ cargarProductos();
 </script>
 
 </body>
+
 </html>
