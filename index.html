@@ -215,8 +215,7 @@ let productos = [];
 async function cargarProductos(){
     catalogo.innerHTML = "Cargando productos...";
 
-    const q = query(collection(db,"productos"), orderBy("createdAt","desc"));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(collection(db,"productos"));
 
     productos = [];
 
