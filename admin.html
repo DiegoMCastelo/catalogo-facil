@@ -163,17 +163,27 @@ button{
         <input type="number" id="precio" placeholder="Precio">
         <textarea id="descripcion" placeholder="Descripción"></textarea>
 
+        <!-- NUEVO -->
+        <select id="categoria">
+            <option value="Plantas">🌿 Plantas</option>
+            <option value="Macetas">🏺 Macetas</option>
+            <option value="Tutores">🎋 Tutores</option>
+            <option value="Fertilizantes">🌱 Fertilizantes</option>
+            <option value="Promociones">🔥 Promociones</option>
+            <option value="Destacadas">⭐ Destacadas</option>
+        </select>
+
        <div class="acciones-fotos">
 
-    <label for="camara" class="btn-foto">
-        📷 Sacar foto
-    </label>
+            <label for="camara" class="btn-foto">
+                📷 Sacar foto
+            </label>
 
-    <label for="imagen" class="btn-foto">
-        🖼️ Elegir de galería
-    </label>
+            <label for="imagen" class="btn-foto">
+                🖼️ Elegir de galería
+            </label>
 
-</div>
+       </div>
 
 <input
     type="file"
@@ -408,13 +418,14 @@ const archivos = archivosGaleria.length > 0 ? archivosGaleria : archivosCamara;
             alert("Producto actualizado correctamente");
         } else {
             await addDoc(collection(db, "productos"), {
-                nombre,
-                precio,
-                descripcion,
-                imagen: imagenUrl,
-                imagenes: imagenes,
-                createdAt: serverTimestamp()
-            });
+    nombre,
+    precio,
+    descripcion,
+    categoria: document.getElementById("categoria").value,
+    imagen: imagenUrl,
+    imagenes: imagenes,
+    createdAt: serverTimestamp()
+});
 
             alert("Producto guardado correctamente");
         }
