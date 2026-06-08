@@ -425,14 +425,15 @@ body{
 <a class="wsp-flotante" href="https://wa.me/5493516549856" target="_blank">☘</a>
 
 <script type="module">
-import { db } from "./js/firebase.js";
-
 import {
   collection,
   getDocs,
   query,
-  orderBy
+  orderBy,
+  addDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
 
 const catalogo = document.getElementById("catalogo");
 const buscador = document.getElementById("buscador");
@@ -505,7 +506,7 @@ window.cerrarFormularioCliente = function(){
     document.getElementById("panelCliente").style.display = "none";
 }
 
-window.confirmarPedidoCliente = function(){
+window.confirmarPedidoCliente = async function(){
     const nombre = document.getElementById("clienteNombre").value.trim();
     const whatsapp = document.getElementById("clienteWhatsapp").value.trim();
     const barrio = document.getElementById("clienteBarrio").value.trim();
@@ -517,14 +518,38 @@ window.confirmarPedidoCliente = function(){
 
     let total = 0;
 
+    const productosConsulta = carrito.map(item => {
+        total += Number(item.precio) || 0;
+
+        return {
+            nombre: item.nombre || "",
+            precio: Number(item.precio) || 0,
+            categoria: item.categoria || ""
+        };
+    });
+
+    try {
+        await addDoc(collection(db, "consultas"), {
+            nombre,
+            whatsapp,
+            barrio,
+            productos: productosConsulta,
+            total,
+            estado: "pendiente",
+            fecha: serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Error al guardar consulta:", error);
+        alert("No se pudo guardar la consulta, pero igual podés enviarla por WhatsApp.");
+    }
+
     let mensaje = `Hola, quiero consultar por este pedido:%0A%0A`;
     mensaje += `Nombre: ${nombre}%0A`;
     mensaje += `WhatsApp: ${whatsapp}%0A`;
     mensaje += `Barrio: ${barrio}%0A%0A`;
     mensaje += `Productos:%0A`;
 
-    carrito.forEach(item => {
-        total += Number(item.precio) || 0;
+    productosConsulta.forEach(item => {
         mensaje += `- ${item.nombre} - $${item.precio}%0A`;
     });
 
