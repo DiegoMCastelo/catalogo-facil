@@ -86,54 +86,57 @@ body{
 }
 
 .producto{
-    background:white;
-    border-radius:20px;
+    background:#ffffff;
+    border-radius:26px;
     overflow:hidden;
-    box-shadow:0 8px 22px rgba(0,0,0,.12);
-    transition:.25s;
+    box-shadow:0 14px 35px rgba(0,0,0,.08);
+    transition:.3s ease;
 }
 
 .producto:hover{
-    transform:translateY(-5px);
-}
-
-.producto img{
-    width:100%;
-    height:240px;
-    object-fit:cover;
+    transform:translateY(-6px);
+    box-shadow:0 18px 45px rgba(0,0,0,.12);
 }
 
 .info{
-    padding:18px;
+    padding:24px;
 }
 
-.categoria{
-    display:inline-block;
-    background:#e6f2e6;
-    color:#24552d;
-    padding:5px 10px;
-    border-radius:20px;
-    font-size:13px;
-    margin-bottom:8px;
+.info h2{
+    font-size:24px;
+    margin:8px 0 10px;
+    color:#1f2d1f;
+    line-height:1.2;
+}
+
+.info p{
+    color:#667066;
+    line-height:1.5;
+    font-size:15px;
 }
 
 .precio{
-    font-size:26px;
-    font-weight:bold;
-    color:#24552d;
-    margin:10px 0;
+    font-size:30px;
+    font-weight:800;
+    color:#214d2b;
+    margin:14px 0;
 }
 
 .whatsapp{
     display:block;
-    margin-top:14px;
-    padding:13px;
-    background:#25D366;
+    margin-top:18px;
+    padding:15px;
+    background:#214d2b;
     color:white;
     text-decoration:none;
     text-align:center;
-    border-radius:12px;
+    border-radius:999px;
     font-weight:bold;
+    transition:.3s;
+}
+
+.whatsapp:hover{
+    background:#16391f;
 }
 
 .wsp-flotante{
@@ -226,7 +229,8 @@ body{
 
 <section class="hero">
     <h1>Vivero en Cordoba</h1>
-    <p>Plantas, macetas y deco para transformar tus espacios</p>
+    <p class="submarca">🌿 Entregas programadas en Córdoba</p>
+    <p>Plantas seleccionadas, macetas y deco natural para llenar de vida tus espacios.</p>
     <a href="https://wa.me/5493516549856" target="_blank">Consultar por WhatsApp</a>
 </section>
 
