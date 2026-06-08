@@ -395,6 +395,11 @@ window.agregarAlCarrito = function(index){
     actualizarCarrito();
 }
 
+window.quitarDelCarrito = function(index){
+    carrito.splice(index, 1);
+    actualizarCarrito();
+}
+
 function actualizarCarrito(){
     const cantidad = document.getElementById("cantidadCarrito");
     const listaCarrito = document.getElementById("listaCarrito");
@@ -501,12 +506,8 @@ function mostrarProductos(lista){
                     <p>${p.descripcion || ""}</p>
 
                     <button class="btn-carrito" onclick="agregarAlCarrito(${index})">
-                       window.quitarDelCarrito = function(index){
-    carrito.splice(index, 1);
-    actualizarCarrito();
-}
-                        🛒 Agregar al pedido
-                    </button>
+    🛒 Agregar al pedido
+</button>
 
                     <a class="whatsapp" target="_blank"
                        href="https://wa.me/5493516549856?text=${mensaje}">
