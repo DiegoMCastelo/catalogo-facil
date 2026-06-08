@@ -148,6 +148,33 @@ header h1{
     color:#214d2b;
 }
 
+.top-productos{
+    background:white;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:24px;
+    box-shadow:0 8px 22px rgba(0,0,0,.08);
+}
+
+.top-productos h2{
+    margin-top:0;
+    color:#214d2b;
+}
+
+.ranking-item{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid #e6ece3;
+}
+
+.ranking-item:last-child{
+    border-bottom:none;
+}
+
+.ranking-item strong{
+    color:#214d2b;
+}
 
 
 
@@ -194,7 +221,10 @@ header h1{
 
 </div>
 
-
+<div class="top-productos">
+    <h2>🏆 Productos más consultados</h2>
+    <div id="rankingProductos">Calculando ranking...</div>
+</div>
 
 </div>
 
@@ -240,6 +270,7 @@ async function cargarConsultas(){
     let montoPotencial = 0;
     let montoVendido = 0;
     let totalConsultas = 0;
+    let rankingProductos = {};
 
     if(snapshot.empty){
         listaConsultas.innerHTML = "<p>No hay consultas todavía.</p>";
@@ -274,74 +305,80 @@ async function cargarConsultas(){
         montoVendido += Number(c.total) || 0;
         }
 
-        let productosHTML = "";
+       let productosHTML = "";
 
-        (c.productos || []).forEach(p => {
-            productosHTML += `
-                <div>
-                    ${p.nombre || "Producto"} - $${p.precio || 0}
-                </div>
-            `;
-        });
+(c.productos || []).forEach(p => {
+    const nombreProducto = p.nombre || "Producto sin nombre";
 
-        const telefonoLimpio = (c.whatsapp || "").replace(/\D/g, "");
+    rankingProductos[nombreProducto] =
+        (rankingProductos[nombreProducto] || 0) + 1;
 
-        listaConsultas.innerHTML += `
-            <div class="card">
-                <h2>${c.nombre || "Sin nombre"}</h2>
+    productosHTML += `
+        <div>
+            ${p.nombre || "Producto"} - $${p.precio || 0}
+        </div>
+    `;
+});
 
-<div class="datos">
-    📱 ${c.whatsapp || "Sin WhatsApp"}<br>
-    📍 ${c.barrio || "Sin barrio"}<br>
-    📅 ${
-        c.fecha?.toDate
-            ? c.fecha.toDate().toLocaleString("es-AR")
-            : "-"
-    }
-</div>
+const telefonoLimpio = (c.whatsapp || "").replace(/\D/g, "");
 
-                <div class="productos">
-                    ${productosHTML}
-                </div>
+listaConsultas.innerHTML += `
+    <div class="card">
+        <h2>${c.nombre || "Sin nombre"}</h2>
 
-                <div class="total">
-                    Total estimado: $${c.total || 0}
-                </div>
+        <div class="datos">
+            📱 ${c.whatsapp || "Sin WhatsApp"}<br>
+            📍 ${c.barrio || "Sin barrio"}<br>
+            📅 ${
+                c.fecha?.toDate
+                    ? c.fecha.toDate().toLocaleString("es-AR")
+                    : "-"
+            }
+        </div>
 
-                <div class="estado">
-                    ${c.estado || "pendiente"}
-                </div>
+        <div class="productos">
+            ${productosHTML}
+        </div>
 
-                <div class="acciones-estado">
-                    <button onclick="cambiarEstado('${id}','pendiente')">
-                        Pendiente
-                    </button>
+        <div class="total">
+            Total estimado: $${c.total || 0}
+        </div>
 
-                    <button onclick="cambiarEstado('${id}','contactado')">
-                        Contactado
-                    </button>
+        <div class="estado">
+            ${c.estado || "pendiente"}
+        </div>
 
-                    <button onclick="cambiarEstado('${id}','vendido')">
-                        Vendido
-                    </button>
+        <div class="acciones-estado">
+            <button onclick="cambiarEstado('${id}','pendiente')">
+                Pendiente
+            </button>
 
-                    <button onclick="cambiarEstado('${id}','descartado')">
-                        Descartado
-                    </button>
-                </div>
+            <button onclick="cambiarEstado('${id}','contactado')">
+                Contactado
+            </button>
 
-                <br>
+            <button onclick="cambiarEstado('${id}','vendido')">
+                Vendido
+            </button>
 
-                <a class="whatsapp"
-                   href="https://wa.me/549${telefonoLimpio}"
-                   target="_blank">
-                   Contactar por WhatsApp
-                </a>
-            </div>
-        `;
-    });
+            <button onclick="cambiarEstado('${id}','descartado')">
+                Descartado
+            </button>
+        </div>
 
-    document.getElementById("totalPendientes").innerText = pendientes;
+        <br>
+
+        <a class="whatsapp"
+           href="https://wa.me/549${telefonoLimpio}"
+           target="_blank">
+           Contactar por WhatsApp
+        </a>
+    </div>
+`;
+
+});
+
+document.getElementById("totalPendientes").innerText = pendientes;
 document.getElementById("totalContactados").innerText = contactados;
 document.getElementById("totalVendidos").innerText = vendidos;
 document.getElementById("montoPotencial").innerText = "$" + montoPotencial;
