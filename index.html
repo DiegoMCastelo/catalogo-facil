@@ -332,6 +332,60 @@ body{
     cursor:pointer;
     font-weight:bold;
 }
+
+.panel-cliente{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    z-index:9999;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.panel-cliente-contenido{
+    background:white;
+    width:100%;
+    max-width:420px;
+    border-radius:24px;
+    padding:24px;
+    position:relative;
+}
+
+.panel-cliente-contenido h2{
+    margin-top:0;
+    color:#214d2b;
+}
+
+.panel-cliente-contenido p{
+    color:#667066;
+    line-height:1.4;
+}
+
+.panel-cliente-contenido input{
+    width:100%;
+    padding:14px;
+    margin:8px 0;
+    border-radius:12px;
+    border:1px solid #ccc;
+    font-size:16px;
+    box-sizing:border-box;
+}
+
+.cerrar-cliente{
+    position:absolute;
+    top:12px;
+    right:12px;
+    border:none;
+    background:#eee;
+    border-radius:50%;
+    width:34px;
+    height:34px;
+    cursor:pointer;
+}
+
+
 </style>
 </head>
 
@@ -444,9 +498,30 @@ window.enviarPedidoWhatsApp = function(){
         return;
     }
 
+    document.getElementById("panelCliente").style.display = "flex";
+}
+
+window.cerrarFormularioCliente = function(){
+    document.getElementById("panelCliente").style.display = "none";
+}
+
+window.confirmarPedidoCliente = function(){
+    const nombre = document.getElementById("clienteNombre").value.trim();
+    const whatsapp = document.getElementById("clienteWhatsapp").value.trim();
+    const barrio = document.getElementById("clienteBarrio").value.trim();
+
+    if(!nombre || !whatsapp || !barrio){
+        alert("Completá nombre, WhatsApp y barrio");
+        return;
+    }
+
     let total = 0;
 
-    let mensaje = "Hola, quiero consultar por este pedido:%0A%0A";
+    let mensaje = `Hola, quiero consultar por este pedido:%0A%0A`;
+    mensaje += `Nombre: ${nombre}%0A`;
+    mensaje += `WhatsApp: ${whatsapp}%0A`;
+    mensaje += `Barrio: ${barrio}%0A%0A`;
+    mensaje += `Productos:%0A`;
 
     carrito.forEach(item => {
         total += Number(item.precio) || 0;
@@ -456,6 +531,8 @@ window.enviarPedidoWhatsApp = function(){
     mensaje += `%0ATotal estimado: $${total}`;
 
     window.open(`https://wa.me/5493516549856?text=${mensaje}`, "_blank");
+
+    document.getElementById("panelCliente").style.display = "none";
 }
 
 async function cargarProductos(){
@@ -575,6 +652,22 @@ cargarProductos();
 
         <button class="enviar-pedido" onclick="enviarPedidoWhatsApp()">
             Enviar pedido por WhatsApp
+        </button>
+    </div>
+</div>
+<div id="panelCliente" class="panel-cliente">
+    <div class="panel-cliente-contenido">
+        <button class="cerrar-cliente" onclick="cerrarFormularioCliente()">✕</button>
+
+        <h2>Datos para coordinar</h2>
+        <p>Dejanos tus datos y te contactamos para confirmar disponibilidad y entrega.</p>
+
+        <input type="text" id="clienteNombre" placeholder="Tu nombre">
+        <input type="tel" id="clienteWhatsapp" placeholder="Tu WhatsApp">
+        <input type="text" id="clienteBarrio" placeholder="Barrio">
+
+        <button class="enviar-pedido" onclick="confirmarPedidoCliente()">
+            Continuar por WhatsApp
         </button>
     </div>
 </div>
