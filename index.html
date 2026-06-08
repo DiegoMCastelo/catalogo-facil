@@ -220,7 +220,100 @@ body{
     font-size:36px;
     cursor:pointer;
 }
+.btn-carrito{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:999px;
+    background:#eaf3ea;
+    color:#214d2b;
+    font-weight:bold;
+    font-size:15px;
+    margin-top:14px;
+    cursor:pointer;
+}
 
+.carrito-flotante{
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    background:#214d2b;
+    color:white;
+    padding:14px 18px;
+    border-radius:999px;
+    font-weight:bold;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
+    z-index:999;
+    cursor:pointer;
+}
+
+.carrito-flotante span{
+    background:white;
+    color:#214d2b;
+    padding:3px 8px;
+    border-radius:999px;
+    margin-left:5px;
+}
+
+.panel-carrito{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    z-index:9998;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.panel-carrito-contenido{
+    background:white;
+    width:100%;
+    max-width:420px;
+    border-radius:24px;
+    padding:24px;
+    position:relative;
+}
+
+.cerrar-carrito{
+    position:absolute;
+    top:12px;
+    right:12px;
+    border:none;
+    background:#eee;
+    border-radius:50%;
+    width:34px;
+    height:34px;
+    cursor:pointer;
+}
+
+.item-carrito{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    border-bottom:1px solid #eee;
+    padding:10px 0;
+    font-size:15px;
+}
+
+.total-carrito{
+    font-size:20px;
+    font-weight:bold;
+    margin-top:18px;
+    color:#214d2b;
+}
+
+.enviar-pedido{
+    width:100%;
+    margin-top:18px;
+    padding:15px;
+    border:none;
+    border-radius:999px;
+    background:#25D366;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
 
 </style>
 </head>
@@ -276,6 +369,68 @@ const categoriaFiltro = document.getElementById("categoriaFiltro");
 
 let productos = [];
 
+let carrito = [];
+
+window.agregarAlCarrito = function(index){
+    const producto = productos[index];
+
+    carrito.push(producto);
+    actualizarCarrito();
+}
+
+function actualizarCarrito(){
+    const cantidad = document.getElementById("cantidadCarrito");
+    const listaCarrito = document.getElementById("listaCarrito");
+    const totalCarrito = document.getElementById("totalCarrito");
+
+    cantidad.innerText = carrito.length;
+
+    listaCarrito.innerHTML = "";
+
+    let total = 0;
+
+    carrito.forEach(item => {
+        total += Number(item.precio) || 0;
+
+        listaCarrito.innerHTML += `
+            <div class="item-carrito">
+                <span>${item.nombre}</span>
+                <strong>$${item.precio}</strong>
+            </div>
+        `;
+    });
+
+    totalCarrito.innerText = total;
+}
+
+window.abrirCarrito = function(){
+    document.getElementById("panelCarrito").style.display = "flex";
+}
+
+window.cerrarCarrito = function(){
+    document.getElementById("panelCarrito").style.display = "none";
+}
+
+window.enviarPedidoWhatsApp = function(){
+    if(carrito.length === 0){
+        alert("Todavía no agregaste productos al pedido");
+        return;
+    }
+
+    let total = 0;
+
+    let mensaje = "Hola, quiero consultar por este pedido:%0A%0A";
+
+    carrito.forEach(item => {
+        total += Number(item.precio) || 0;
+        mensaje += `- ${item.nombre} - $${item.precio}%0A`;
+    });
+
+    mensaje += `%0ATotal estimado: $${total}`;
+
+    window.open(`https://wa.me/5493516549856?text=${mensaje}`, "_blank");
+}
+
 async function cargarProductos(){
     catalogo.innerHTML = "Cargando productos...";
 
@@ -298,37 +453,42 @@ function mostrarProductos(lista){
         return;
     }
 
-    lista.forEach(p => {
+    lista.forEach((p, index) => {
         const mensaje = encodeURIComponent(
             `Hola, quiero consultar por ${p.nombre} - $${p.precio}`
         );
 
-catalogo.innerHTML += `
-    <div class="producto">
+        catalogo.innerHTML += `
+            <div class="producto">
 
-        <div class="galeria-producto">
-            ${(p.imagenes || [p.imagen]).map(img => `
-                <img
-            src="${img}"
-            alt="${p.nombre}"
-            class="foto-producto"
-            onclick="abrirImagen('${img}')"
->
-            `).join("")}
-        </div>
+                <div class="galeria-producto">
+                    ${(p.imagenes || [p.imagen]).map(img => `
+                        <img
+                            src="${img}"
+                            alt="${p.nombre}"
+                            class="foto-producto"
+                            onclick="abrirImagen('${img}')"
+                        >
+                    `).join("")}
+                </div>
 
-        <div class="info">
-            <span class="categoria">${p.categoria || "Vivero"}</span>
-            <h2>${p.nombre}</h2>
-            <div class="precio">$${p.precio}</div>
-            <p>${p.descripcion || ""}</p>
-            <a class="whatsapp" target="_blank"
-               href="https://wa.me/5493516549856?text=${mensaje}">
-               Consultar por WhatsApp
-            </a>
-        </div>
-    </div>
-`;
+                <div class="info">
+                    <span class="categoria">${p.categoria || "Vivero"}</span>
+                    <h2>${p.nombre}</h2>
+                    <div class="precio">$${p.precio}</div>
+                    <p>${p.descripcion || ""}</p>
+
+                    <button class="btn-carrito" onclick="agregarAlCarrito(${index})">
+                        🛒 Agregar al pedido
+                    </button>
+
+                    <a class="whatsapp" target="_blank"
+                       href="https://wa.me/5493516549856?text=${mensaje}">
+                       Consultar por WhatsApp
+                    </a>
+                </div>
+            </div>
+        `;
     });
 }
 
@@ -369,6 +529,27 @@ cargarProductos();
 <div id="visorImagen" class="visor-imagen">
     <span onclick="cerrarImagen()">✕</span>
     <img id="imagenGrande">
+</div>
+<div id="carritoFlotante" class="carrito-flotante" onclick="abrirCarrito()">
+    🛒 Pedido <span id="cantidadCarrito">0</span>
+</div>
+
+<div id="panelCarrito" class="panel-carrito">
+    <div class="panel-carrito-contenido">
+        <button class="cerrar-carrito" onclick="cerrarCarrito()">✕</button>
+
+        <h2>Tu pedido</h2>
+
+        <div id="listaCarrito"></div>
+
+        <div class="total-carrito">
+            Total estimado: $<span id="totalCarrito">0</span>
+        </div>
+
+        <button class="enviar-pedido" onclick="enviarPedidoWhatsApp()">
+            Enviar pedido por WhatsApp
+        </button>
+    </div>
 </div>
 
 </body>
