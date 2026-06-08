@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venta rápida - Vivero</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f6ef;
+    color:#1f2d1f;
+}
+
+header{
+    background:#214d2b;
+    color:white;
+    padding:24px;
+    text-align:center;
+}
+
+.contenedor{
+    max-width:1100px;
+    margin:auto;
+    padding:22px;
+}
+
+.panel{
+    background:white;
+    padding:22px;
+    border-radius:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.10);
+    margin-bottom:20px;
+}
+
+input, button{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    border-radius:12px;
+    border:1px solid #ccc;
+    font-size:16px;
+    box-sizing:border-box;
+}
+
+button{
+    border:none;
+    background:#214d2b;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.producto-lista{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    border-bottom:1px solid #eee;
+    padding:10px 0;
+}
+
+.producto-lista button{
+    width:auto;
+    padding:9px 14px;
+}
+
+.item-venta{
+    border-bottom:1px solid #eee;
+    padding:12px 0;
+}
+
+.total{
+    font-size:26px;
+    font-weight:bold;
+    color:#214d2b;
+    margin-top:15px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Venta rápida</h1>
+    <p>Cargar ventas manuales desde el celular</p>
+</header>
+
+<div class="contenedor">
+
+    <div class="panel">
+        <h2>Cliente</h2>
+        <input type="text" id="clienteNombre" placeholder="Nombre">
+        <input type="tel" id="clienteWhatsapp" placeholder="WhatsApp">
+        <input type="text" id="clienteBarrio" placeholder="Barrio">
+    </div>
+
+    <div class="panel">
+        <h2>Buscar producto</h2>
+        <input type="text" id="buscarProducto" placeholder="Buscar planta, maceta o deco...">
+        <div id="resultadosProductos"></div>
+    </div>
+
+    <div class="panel">
+        <h2>Venta</h2>
+        <div id="listaVenta"></div>
+
+        <input type="number" id="descuentoGeneral" placeholder="Descuento general $">
+
+        <div class="total">
+            Total: $<span id="totalVenta">0</span>
+        </div>
+
+        <button onclick="guardarVenta()">
+            Guardar venta
+        </button>
+    </div>
+
+</div>
+
+<script type="module">
+import { db } from "./js/firebase.js";
+
+import {
+    collection,
+    getDocs,
+    addDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const buscarProducto = document.getElementById("buscarProducto");
+const resultadosProductos = document.getElementById("resultadosProductos");
+const listaVenta = document.getElementById("listaVenta");
+const totalVenta = document.getElementById("totalVenta");
+const descuentoGeneral = document.getElementById("descuentoGeneral");
+
+let productos = [];
+let venta = [];
+
+async function cargarProductos(){
+    const snapshot = await getDocs(collection(db, "productos"));
+
+    productos = [];
+
+    snapshot.forEach(doc => {
+        productos.push(doc.data());
+    });
+}
+
+function buscar(){
+    const texto = buscarProducto.value.toLowerCase().trim();
+
+    resultadosProductos.innerHTML = "";
+
+    if(texto.length < 2){
+        return;
+    }
+
+    const filtrados = productos.filter(p =>
+        (p.nombre || "").toLowerCase().includes(texto)
+    );
+
+    filtrados.slice(0, 10).forEach((p, index) => {
+        resultadosProductos.innerHTML += `
+            <div class="producto-lista">
+                <div>
+                    <strong>${p.nombre}</strong><br>
+                    $${p.precio || 0}
+                </div>
+
+                <button onclick="agregarProducto(${productos.indexOf(p)})">
+                    Agregar
+                </button>
+            </div>
+        `;
+    });
+}
+
+window.agregarProducto = function(index){
+    const p = productos[index];
+
+    venta.push({
+        nombre: p.nombre || "",
+        precioCatalogo: Number(p.precio) || 0,
+        precioVenta: Number(p.precio) || 0,
+        cantidad: 1
+    });
+
+    actualizarVenta();
+}
+
+function actualizarVenta(){
+    listaVenta.innerHTML = "";
+
+    let subtotal = 0;
+
+    venta.forEach((item, index) => {
+        const itemTotal = item.precioVenta * item.cantidad;
+        subtotal += itemTotal;
+
+        listaVenta.innerHTML += `
+            <div class="item-venta">
+                <strong>${item.nombre}</strong>
+
+                <input type="number"
+                       value="${item.cantidad}"
+                       onchange="cambiarCantidad(${index}, this.value)"
+                       placeholder="Cantidad">
+
+                <input type="number"
+                       value="${item.precioVenta}"
+                       onchange="cambiarPrecio(${index}, this.value)"
+                       placeholder="Precio venta">
+
+                <button onclick="quitarItem(${index})">
+                    Quitar
+                </button>
+            </div>
+        `;
+    });
+
+    const descuento = Number(descuentoGeneral.value) || 0;
+    const total = Math.max(subtotal - descuento, 0);
+
+    totalVenta.innerText = total;
+}
+
+window.cambiarCantidad = function(index, valor){
+    venta[index].cantidad = Number(valor) || 1;
+    actualizarVenta();
+}
+
+window.cambiarPrecio = function(index, valor){
+    venta[index].precioVenta = Number(valor) || 0;
+    actualizarVenta();
+}
+
+window.quitarItem = function(index){
+    venta.splice(index, 1);
+    actualizarVenta();
+}
+
+descuentoGeneral.addEventListener("input", actualizarVenta);
+buscarProducto.addEventListener("input", buscar);
+
+window.guardarVenta = async function(){
+    const nombre = document.getElementById("clienteNombre").value.trim();
+    const whatsapp = document.getElementById("clienteWhatsapp").value.trim();
+    const barrio = document.getElementById("clienteBarrio").value.trim();
+
+    if(!nombre || !whatsapp){
+        alert("Completá nombre y WhatsApp");
+        return;
+    }
+
+    if(venta.length === 0){
+        alert("Agregá productos a la venta");
+        return;
+    }
+
+    let subtotal = 0;
+
+    venta.forEach(item => {
+        subtotal += item.precioVenta * item.cantidad;
+    });
+
+    const descuento = Number(descuentoGeneral.value) || 0;
+    const total = Math.max(subtotal - descuento, 0);
+
+    await addDoc(collection(db, "ventas"), {
+        nombre,
+        whatsapp,
+        barrio,
+        productos: venta,
+        subtotal,
+        descuento,
+        total,
+        origen: "venta_manual",
+        estado: "vendido",
+        fecha: serverTimestamp()
+    });
+
+    alert("Venta guardada correctamente");
+
+    venta = [];
+    actualizarVenta();
+
+    document.getElementById("clienteNombre").value = "";
+    document.getElementById("clienteWhatsapp").value = "";
+    document.getElementById("clienteBarrio").value = "";
+    descuentoGeneral.value = "";
+}
+
+cargarProductos();
+</script>
+
+</body>
+</html>
