@@ -226,6 +226,21 @@ header h1{
     <div id="rankingProductos">Calculando ranking...</div>
 </div>
 
+<div class="top-productos">
+    <h2>📍 Barrios con más consultas</h2>
+    <div id="rankingBarrios">Calculando ranking...</div>
+</div>
+
+<div class="dash-card">
+    <span>📅 Ventas Hoy</span>
+    <strong id="ventasHoy">$0</strong>
+</div>
+
+<div class="dash-card">
+    <span>📆 Ventas Mes</span>
+    <strong id="ventasMes">$0</strong>
+</div>
+
 </div>
 
     <div id="listaConsultas">Cargando consultas...</div>
@@ -270,7 +285,10 @@ async function cargarConsultas(){
     let montoPotencial = 0;
     let montoVendido = 0;
     let totalConsultas = 0;
+    let ventasHoy = 0;
+    let ventasMes = 0;
     let rankingProductos = {};
+    let rankingBarrios = {};
 
     if(snapshot.empty){
         listaConsultas.innerHTML = "<p>No hay consultas todavía.</p>";
@@ -287,7 +305,14 @@ async function cargarConsultas(){
         const c = documento.data();
         const id = documento.id;
         const estado = c.estado || "pendiente";
+
         totalConsultas++;
+
+        const barrioNombre = (c.barrio || "Sin barrio").trim();
+
+        rankingBarrios[barrioNombre] =
+        (rankingBarrios[barrioNombre] || 0) + 1;
+
     
 
         if(estado === "pendiente"){
@@ -301,9 +326,34 @@ async function cargarConsultas(){
         }
 
         if(estado === "vendido"){
-        vendidos++;
-        montoVendido += Number(c.total) || 0;
+    vendidos++;
+
+    const importe = Number(c.total) || 0;
+
+    montoVendido += importe;
+
+    if(c.fecha?.toDate){
+
+        const fechaVenta = c.fecha.toDate();
+
+        const hoy = new Date();
+
+        if(
+            fechaVenta.getDate() === hoy.getDate() &&
+            fechaVenta.getMonth() === hoy.getMonth() &&
+            fechaVenta.getFullYear() === hoy.getFullYear()
+        ){
+            ventasHoy += importe;
         }
+
+        if(
+            fechaVenta.getMonth() === hoy.getMonth() &&
+            fechaVenta.getFullYear() === hoy.getFullYear()
+        ){
+            ventasMes += importe;
+        }
+    }
+}
 
        let productosHTML = "";
 
@@ -390,6 +440,13 @@ const porcentajeConversion = totalConsultas > 0
     : 0;
 
 document.getElementById("conversion").innerText = porcentajeConversion + "%";
+
+document.getElementById("ventasHoy").innerText =
+    "$" + ventasHoy.toLocaleString("es-AR");
+
+document.getElementById("ventasMes").innerText =
+    "$" + ventasMes.toLocaleString("es-AR");
+
 const rankingDiv = document.getElementById("rankingProductos");
 
 const rankingOrdenado = Object.entries(rankingProductos)
@@ -409,10 +466,36 @@ if(rankingOrdenado.length === 0){
             </div>
         `;
     });
-}
-}
+}}
 
 cargarConsultas();
+
+const rankingBarriosDiv =
+    document.getElementById("rankingBarrios");
+
+const barriosOrdenados = Object.entries(rankingBarrios)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+if(barriosOrdenados.length === 0){
+
+    rankingBarriosDiv.innerHTML =
+        "<p>No hay barrios registrados todavía.</p>";
+
+} else {
+
+    rankingBarriosDiv.innerHTML = "";
+
+    barriosOrdenados.forEach(([nombre, cantidad], index) => {
+
+        rankingBarriosDiv.innerHTML += `
+            <div class="ranking-item">
+                <span>${index + 1}. ${nombre}</span>
+                <strong>${cantidad} consultas</strong>
+            </div>
+        `;
+    });
+}
 
 </script>
 
