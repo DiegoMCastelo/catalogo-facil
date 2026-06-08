@@ -231,6 +231,11 @@ header h1{
     <div id="rankingBarrios">Calculando ranking...</div>
 </div>
 
+<div class="top-productos">
+    <h2>👥 Clientes más interesados</h2>
+    <div id="rankingClientes">Calculando ranking...</div>
+</div>
+
 <div class="dash-card">
     <span>📅 Ventas Hoy</span>
     <strong id="ventasHoy">$0</strong>
@@ -289,6 +294,7 @@ async function cargarConsultas(){
     let ventasMes = 0;
     let rankingProductos = {};
     let rankingBarrios = {};
+    let rankingClientes = {};
 
     if(snapshot.empty){
         listaConsultas.innerHTML = "<p>No hay consultas todavía.</p>";
@@ -312,7 +318,19 @@ async function cargarConsultas(){
         rankingBarrios[barrioNombre] =
         (rankingBarrios[barrioNombre] || 0) + 1;
 
-    
+    const telefonoCliente =
+    (c.whatsapp || "Sin teléfono").trim();
+
+if(!rankingClientes[telefonoCliente]){
+
+    rankingClientes[telefonoCliente] = {
+        nombre: c.nombre || "Cliente",
+        cantidad: 0
+    };
+}
+
+rankingClientes[telefonoCliente].cantidad++;
+
 
         if(estado === "pendiente"){
             pendientes++;
@@ -482,6 +500,43 @@ if(barriosOrdenados.length === 0){
             <div class="ranking-item">
                 <span>${index + 1}. ${nombre}</span>
                 <strong>${cantidad} consultas</strong>
+            </div>
+        `;
+    });
+}
+const rankingClientesDiv =
+    document.getElementById("rankingClientes");
+
+const clientesOrdenados =
+    Object.entries(rankingClientes)
+    .sort((a, b) =>
+        b[1].cantidad - a[1].cantidad
+    )
+    .slice(0, 10);
+
+if(clientesOrdenados.length === 0){
+
+    rankingClientesDiv.innerHTML =
+        "<p>No hay clientes todavía.</p>";
+
+} else {
+
+    rankingClientesDiv.innerHTML = "";
+
+    clientesOrdenados.forEach(
+        ([telefono, datos], index) => {
+
+        rankingClientesDiv.innerHTML += `
+            <div class="ranking-item">
+                <span>
+                    ${index + 1}.
+                    ${datos.nombre}
+                    (${telefono})
+                </span>
+
+                <strong>
+                    ${datos.cantidad} consultas
+                </strong>
             </div>
         `;
     });
