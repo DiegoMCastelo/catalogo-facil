@@ -6,6 +6,30 @@
 <title>Admin - App Vivero</title>
 
 <style>
+
+.menu-admin{
+    max-width:1100px;
+    margin:20px auto;
+    padding:0 20px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.btn-admin{
+    background:#214d2b;
+    color:white;
+    text-decoration:none;
+    padding:12px 18px;
+    border-radius:12px;
+    font-weight:bold;
+    display:inline-block;
+}
+
+.btn-admin:hover{
+    opacity:.9;
+}
+
 html, body {
     width: 100%;
     max-width: 100%;
@@ -175,11 +199,22 @@ button{
 </head>
 
 <body>
-
 <header>
     <h1>Panel Admin - App Vivero</h1>
     <p>Cargar, editar y eliminar productos</p>
 </header>
+
+<div class="menu-admin">
+
+    <a href="consultas.html" class="btn-admin">
+        📋 Consultas
+    </a>
+
+    <a href="venta.html" class="btn-admin">
+        💰 Venta rápida
+    </a>
+
+</div>
 
 <div class="contenedor">
 

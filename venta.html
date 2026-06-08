@@ -82,6 +82,25 @@ button{
 
 <body>
 
+    <body>
+
+<script>
+if (sessionStorage.getItem("adminOK") !== "true") {
+    const clave = prompt("Ingrese clave de administrador:");
+
+    if (clave === "vivero123") {
+        sessionStorage.setItem("adminOK", "true");
+    } else {
+        alert("Clave incorrecta");
+        window.location.href = "index.html";
+    }
+}
+</script>
+
+<header>
+...
+</header>
+
 <header>
     <h1>Venta rápida</h1>
     <p>Cargar ventas manuales desde el celular</p>

@@ -32,15 +32,16 @@ header h1{
 
 .card{
     background:white;
-    border-radius:20px;
-    padding:20px;
+    border-radius:16px;
+    padding:14px;
     margin-bottom:18px;
     box-shadow:0 10px 25px rgba(0,0,0,.10);
 }
 
 .card h2{
-    margin:0 0 8px;
+    margin:0 0 4px;
     color:#214d2b;
+    font-size:18px;
 }
 
 .datos{
@@ -65,7 +66,7 @@ header h1{
 }
 
 .total{
-    font-size:22px;
+    font-size:18px;
     font-weight:bold;
     color:#214d2b;
 }
@@ -176,12 +177,67 @@ header h1{
     color:#214d2b;
 }
 
+.datos{
+    color:#5f6b5f;
+    margin-bottom:8px;
+    font-size:14px;
+    line-height:1.4;
+}
+
+.productos{
+    background:#f5f8f3;
+    padding:8px;
+    border-radius:12px;
+    margin:8px 0;
+}
+
+.acciones-estado button{
+    border:none;
+    padding:6px 10px;
+    font-size:12px;
+    border-radius:999px;
+    cursor:pointer;
+    font-weight:bold;
+    background:#eef4ec;
+}
+
+.whatsapp{
+    display:inline-block;
+    margin-top:10px;
+    padding:8px 14px;
+    font-size:14px;
+    background:#25D366;
+    color:white;
+    border-radius:999px;
+    text-decoration:none;
+    font-weight:bold;
+}
 
 
 </style>
 </head>
 
 <body>
+
+    <body>
+
+<script>
+if (sessionStorage.getItem("adminOK") !== "true") {
+    const clave = prompt("Ingrese clave de administrador:");
+
+    if (clave === "vivero123") {
+        sessionStorage.setItem("adminOK", "true");
+    } else {
+        alert("Clave incorrecta");
+        window.location.href = "index.html";
+    }
+}
+</script>
+
+<header>
+...
+</header>
+
 
 <header>
     <h1>Consultas del Vivero</h1>
