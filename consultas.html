@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultas - Vivero</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f6ef;
+    color:#1f2d1f;
+}
+
+header{
+    background:#214d2b;
+    color:white;
+    padding:28px 20px;
+    text-align:center;
+}
+
+header h1{
+    margin:0;
+}
+
+.contenedor{
+    max-width:1100px;
+    margin:auto;
+    padding:25px;
+}
+
+.card{
+    background:white;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,.10);
+}
+
+.card h2{
+    margin:0 0 8px;
+    color:#214d2b;
+}
+
+.datos{
+    color:#5f6b5f;
+    margin-bottom:14px;
+}
+
+.productos{
+    background:#f5f8f3;
+    padding:12px;
+    border-radius:14px;
+    margin:12px 0;
+}
+
+.productos div{
+    padding:5px 0;
+    border-bottom:1px solid #e0e6dc;
+}
+
+.productos div:last-child{
+    border-bottom:none;
+}
+
+.total{
+    font-size:22px;
+    font-weight:bold;
+    color:#214d2b;
+}
+
+.estado{
+    display:inline-block;
+    margin-top:10px;
+    padding:7px 12px;
+    border-radius:20px;
+    background:#fff3cd;
+    color:#8a6d00;
+    font-weight:bold;
+    font-size:14px;
+}
+
+.whatsapp{
+    display:inline-block;
+    margin-top:14px;
+    padding:12px 18px;
+    background:#25D366;
+    color:white;
+    border-radius:999px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.volver{
+    display:inline-block;
+    margin-bottom:20px;
+    color:#214d2b;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+@media(max-width:700px){
+    .contenedor{
+        padding:16px;
+    }
+}
+
+.acciones-estado{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+}
+
+.acciones-estado button{
+    border:none;
+    padding:8px 12px;
+    border-radius:999px;
+    cursor:pointer;
+    font-weight:bold;
+    background:#eef4ec;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Consultas del Vivero</h1>
+    <p>Clientes que dejaron pedidos desde el catálogo</p>
+</header>
+
+<div class="contenedor">
+    <a class="volver" href="admin.html">← Volver al admin</a>
+
+    <div id="listaConsultas">Cargando consultas...</div>
+</div>
+
+<script type="module">
+import { db } from "./js/firebase.js";
+
+import {
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    doc,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const listaConsultas = document.getElementById("listaConsultas");
+
+window.cambiarEstado = async function(id, estado){
+
+    await updateDoc(
+        doc(db, "consultas", id),
+        { estado }
+    );
+
+    cargarConsultas();
+}
+
+async function cargarConsultas(){
+    listaConsultas.innerHTML = "Cargando consultas...";
+
+    const q = query(collection(db, "consultas"), orderBy("fecha", "desc"));
+    const snapshot = await getDocs(q);
+
+    listaConsultas.innerHTML = "";
+
+    if(snapshot.empty){
+        listaConsultas.innerHTML = "<p>No hay consultas todavía.</p>";
+        return;
+    }
+
+    snapshot.forEach(documento => {
+        const c = documento.data();
+        const id = documento.id;
+
+        let productosHTML = "";
+
+        (c.productos || []).forEach(p => {
+            productosHTML += `
+                <div>
+                    ${p.nombre || "Producto"} - $${p.precio || 0}
+                </div>
+            `;
+        });
+
+        const telefonoLimpio = (c.whatsapp || "").replace(/\D/g, "");
+
+        listaConsultas.innerHTML += `
+            <div class="card">
+                <h2>${c.nombre || "Sin nombre"}</h2>
+
+                <div class="datos">
+                    📱 ${c.whatsapp || "Sin WhatsApp"}<br>
+                    📍 ${c.barrio || "Sin barrio"}
+                </div>
+
+                <div class="productos">
+                    ${productosHTML}
+                </div>
+
+                <div class="total">
+                    Total estimado: $${c.total || 0}
+                </div>
+
+                <div class="estado">
+    ${c.estado || "pendiente"}
+</div>
+
+<div class="acciones-estado">
+    <button onclick="cambiarEstado('${id}','pendiente')">
+        Pendiente
+    </button>
+
+    <button onclick="cambiarEstado('${id}','contactado')">
+        Contactado
+    </button>
+
+    <button onclick="cambiarEstado('${id}','vendido')">
+        Vendido
+    </button>
+
+    <button onclick="cambiarEstado('${id}','descartado')">
+        Descartado
+    </button>
+</div>
+
+                <br>
+
+                <a class="whatsapp"
+                   href="https://wa.me/549${telefonoLimpio}"
+                   target="_blank">
+                   Contactar por WhatsApp
+                </a>
+            </div>
+        `;
+    });
+}
+
+cargarConsultas();
+</script>
+
+</body>
+</html>
