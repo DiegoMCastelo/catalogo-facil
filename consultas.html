@@ -122,6 +122,34 @@ header h1{
     background:#eef4ec;
 }
 
+.dashboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+    margin-bottom:24px;
+}
+
+.dash-card{
+    background:white;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 8px 22px rgba(0,0,0,.08);
+}
+
+.dash-card span{
+    display:block;
+    color:#667066;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.dash-card strong{
+    font-size:26px;
+    color:#214d2b;
+}
+
+
+
 
 </style>
 </head>
@@ -135,8 +163,34 @@ header h1{
 
 <div class="contenedor">
     <a class="volver" href="admin.html">← Volver al admin</a>
+<div class="dashboard">
+    <div class="dash-card">
+        <span>📥 Pendientes</span>
+        <strong id="totalPendientes">0</strong>
+    </div>
+
+    <div class="dash-card">
+        <span>💬 Contactados</span>
+        <strong id="totalContactados">0</strong>
+    </div>
+
+    <div class="dash-card">
+        <span>💰 Vendidos</span>
+        <strong id="totalVendidos">0</strong>
+    </div>
+
+    <div class="dash-card">
+        <span>💵 Monto potencial</span>
+        <strong id="montoPotencial">$0</strong>
+    </div>
+</div>
 
     <div id="listaConsultas">Cargando consultas...</div>
+    let pendientes = 0;
+let contactados = 0;
+let vendidos = 0;
+let montoPotencial = 0;
+
 </div>
 
 <script type="module">
@@ -176,9 +230,32 @@ async function cargarConsultas(){
         return;
     }
 
+    document.getElementById("totalPendientes").innerText = pendientes;
+document.getElementById("totalContactados").innerText = contactados;
+document.getElementById("totalVendidos").innerText = vendidos;
+document.getElementById("montoPotencial").innerText = "$" + montoPotencial;
+
+
+
     snapshot.forEach(documento => {
         const c = documento.data();
         const id = documento.id;
+        const estado = c.estado || "pendiente";
+
+if(estado === "pendiente"){
+    pendientes++;
+    montoPotencial += Number(c.total) || 0;
+}
+
+if(estado === "contactado"){
+    contactados++;
+    montoPotencial += Number(c.total) || 0;
+}
+
+if(estado === "vendido"){
+    vendidos++;
+}
+
 
         let productosHTML = "";
 
@@ -244,6 +321,7 @@ async function cargarConsultas(){
 }
 
 cargarConsultas();
+
 </script>
 
 </body>
