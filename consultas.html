@@ -305,7 +305,6 @@ async function cargarConsultas(){
         const c = documento.data();
         const id = documento.id;
         const estado = c.estado || "pendiente";
-
         totalConsultas++;
 
         const barrioNombre = (c.barrio || "Sin barrio").trim();
@@ -466,28 +465,19 @@ if(rankingOrdenado.length === 0){
             </div>
         `;
     });
-}}
 
-cargarConsultas();
-
-const rankingBarriosDiv =
-    document.getElementById("rankingBarrios");
+    const rankingBarriosDiv = document.getElementById("rankingBarrios");
 
 const barriosOrdenados = Object.entries(rankingBarrios)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
 if(barriosOrdenados.length === 0){
-
-    rankingBarriosDiv.innerHTML =
-        "<p>No hay barrios registrados todavía.</p>";
-
+    rankingBarriosDiv.innerHTML = "<p>No hay barrios registrados todavía.</p>";
 } else {
-
     rankingBarriosDiv.innerHTML = "";
 
     barriosOrdenados.forEach(([nombre, cantidad], index) => {
-
         rankingBarriosDiv.innerHTML += `
             <div class="ranking-item">
                 <span>${index + 1}. ${nombre}</span>
@@ -496,6 +486,10 @@ if(barriosOrdenados.length === 0){
         `;
     });
 }
+
+}}
+
+cargarConsultas();
 
 </script>
 
