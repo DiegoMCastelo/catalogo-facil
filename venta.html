@@ -94,6 +94,21 @@ button{
         <input type="text" id="clienteNombre" placeholder="Nombre">
         <input type="tel" id="clienteWhatsapp" placeholder="WhatsApp">
         <input type="text" id="clienteBarrio" placeholder="Barrio">
+        <select id="vendedor">
+    <option value="Diego">Diego</option>
+    <option value="Lore">Lore</option>
+    <option value="Mostrador">Mostrador</option>
+</select>
+
+<select id="formaPago">
+    <option value="Efectivo">💵 Efectivo</option>
+    <option value="Transferencia">🏦 Transferencia</option>
+    <option value="Débito">💳 Débito</option>
+    <option value="Crédito">💳 Crédito</option>
+    <option value="Cuenta Corriente">📒 Cuenta Corriente</option>
+</select>
+
+</select>
     </div>
 
     <div class="panel">
@@ -248,6 +263,8 @@ window.guardarVenta = async function(){
     const nombre = document.getElementById("clienteNombre").value.trim();
     const whatsapp = document.getElementById("clienteWhatsapp").value.trim();
     const barrio = document.getElementById("clienteBarrio").value.trim();
+    const vendedor = document.getElementById("vendedor").value.trim();
+    const formaPago = document.getElementById("formaPago").value;
 
     if(!nombre || !whatsapp){
         alert("Completá nombre y WhatsApp");
@@ -278,7 +295,10 @@ window.guardarVenta = async function(){
         total,
         origen: "venta_manual",
         estado: "vendido",
+        vendedor: vendedor || "Sin vendedor",
+        formaPago,
         fecha: serverTimestamp()
+        
     });
 
     alert("Venta guardada correctamente");
@@ -289,6 +309,7 @@ window.guardarVenta = async function(){
     document.getElementById("clienteNombre").value = "";
     document.getElementById("clienteWhatsapp").value = "";
     document.getElementById("clienteBarrio").value = "";
+    document.getElementById("vendedor").value = "";
     descuentoGeneral.value = "";
 }
 
