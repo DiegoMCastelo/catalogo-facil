@@ -186,11 +186,7 @@ header h1{
 </div>
 
     <div id="listaConsultas">Cargando consultas...</div>
-    let pendientes = 0;
-let contactados = 0;
-let vendidos = 0;
-let montoPotencial = 0;
-
+    
 </div>
 
 <script type="module">
@@ -225,37 +221,40 @@ async function cargarConsultas(){
 
     listaConsultas.innerHTML = "";
 
+    let pendientes = 0;
+    let contactados = 0;
+    let vendidos = 0;
+    let montoPotencial = 0;
+
     if(snapshot.empty){
         listaConsultas.innerHTML = "<p>No hay consultas todavía.</p>";
+
+        document.getElementById("totalPendientes").innerText = 0;
+        document.getElementById("totalContactados").innerText = 0;
+        document.getElementById("totalVendidos").innerText = 0;
+        document.getElementById("montoPotencial").innerText = "$0";
+
         return;
     }
-
-    document.getElementById("totalPendientes").innerText = pendientes;
-document.getElementById("totalContactados").innerText = contactados;
-document.getElementById("totalVendidos").innerText = vendidos;
-document.getElementById("montoPotencial").innerText = "$" + montoPotencial;
-
-
 
     snapshot.forEach(documento => {
         const c = documento.data();
         const id = documento.id;
         const estado = c.estado || "pendiente";
 
-if(estado === "pendiente"){
-    pendientes++;
-    montoPotencial += Number(c.total) || 0;
-}
+        if(estado === "pendiente"){
+            pendientes++;
+            montoPotencial += Number(c.total) || 0;
+        }
 
-if(estado === "contactado"){
-    contactados++;
-    montoPotencial += Number(c.total) || 0;
-}
+        if(estado === "contactado"){
+            contactados++;
+            montoPotencial += Number(c.total) || 0;
+        }
 
-if(estado === "vendido"){
-    vendidos++;
-}
-
+        if(estado === "vendido"){
+            vendidos++;
+        }
 
         let productosHTML = "";
 
@@ -287,26 +286,26 @@ if(estado === "vendido"){
                 </div>
 
                 <div class="estado">
-    ${c.estado || "pendiente"}
-</div>
+                    ${c.estado || "pendiente"}
+                </div>
 
-<div class="acciones-estado">
-    <button onclick="cambiarEstado('${id}','pendiente')">
-        Pendiente
-    </button>
+                <div class="acciones-estado">
+                    <button onclick="cambiarEstado('${id}','pendiente')">
+                        Pendiente
+                    </button>
 
-    <button onclick="cambiarEstado('${id}','contactado')">
-        Contactado
-    </button>
+                    <button onclick="cambiarEstado('${id}','contactado')">
+                        Contactado
+                    </button>
 
-    <button onclick="cambiarEstado('${id}','vendido')">
-        Vendido
-    </button>
+                    <button onclick="cambiarEstado('${id}','vendido')">
+                        Vendido
+                    </button>
 
-    <button onclick="cambiarEstado('${id}','descartado')">
-        Descartado
-    </button>
-</div>
+                    <button onclick="cambiarEstado('${id}','descartado')">
+                        Descartado
+                    </button>
+                </div>
 
                 <br>
 
@@ -318,6 +317,11 @@ if(estado === "vendido"){
             </div>
         `;
     });
+
+    document.getElementById("totalPendientes").innerText = pendientes;
+    document.getElementById("totalContactados").innerText = contactados;
+    document.getElementById("totalVendidos").innerText = vendidos;
+    document.getElementById("montoPotencial").innerText = "$" + montoPotencial;
 }
 
 cargarConsultas();
