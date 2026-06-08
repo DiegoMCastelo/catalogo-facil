@@ -445,9 +445,7 @@ let productos = [];
 
 let carrito = [];
 
-window.agregarAlCarrito = function(index){
-    const producto = productos[index];
-
+window.agregarAlCarrito = function(producto){
     carrito.push(producto);
     actualizarCarrito();
 }
@@ -584,7 +582,7 @@ function mostrarProductos(lista){
         return;
     }
 
-    lista.forEach((p, index) => {
+    lista.forEach((p) => {
         const mensaje = encodeURIComponent(
             `Hola, quiero consultar por ${p.nombre} - $${p.precio}`
         );
@@ -609,7 +607,7 @@ function mostrarProductos(lista){
                     <div class="precio">$${p.precio}</div>
                     <p>${p.descripcion || ""}</p>
 
-                    <button class="btn-carrito" onclick="agregarAlCarrito(${index})">
+         <button class="btn-carrito" onclick='agregarAlCarrito(${JSON.stringify(p)})'>
     🛒 Agregar al pedido
 </button>
 
