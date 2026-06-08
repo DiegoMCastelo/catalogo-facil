@@ -390,7 +390,26 @@ const porcentajeConversion = totalConsultas > 0
     : 0;
 
 document.getElementById("conversion").innerText = porcentajeConversion + "%";
+const rankingDiv = document.getElementById("rankingProductos");
 
+const rankingOrdenado = Object.entries(rankingProductos)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+if(rankingOrdenado.length === 0){
+    rankingDiv.innerHTML = "<p>No hay productos consultados todavía.</p>";
+} else {
+    rankingDiv.innerHTML = "";
+
+    rankingOrdenado.forEach(([nombre, cantidad], index) => {
+        rankingDiv.innerHTML += `
+            <div class="ranking-item">
+                <span>${index + 1}. ${nombre}</span>
+                <strong>${cantidad} consultas</strong>
+            </div>
+        `;
+    });
+}
 }
 
 cargarConsultas();
