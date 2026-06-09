@@ -287,12 +287,24 @@ descuentoGeneral.addEventListener("input", actualizarVenta);
 buscarProducto.addEventListener("input", buscar);
 
 window.guardarVenta = async function(){
-    const nombre = document.getElementById("clienteNombre").value.trim();
-    const whatsapp = document.getElementById("clienteWhatsapp").value.trim();
-    const barrio = document.getElementById("clienteBarrio").value.trim();
-    const vendedor = document.getElementById("vendedor").value.trim();
-    const formaPago = document.getElementById("formaPago").value;
-    const whatsappLimpio = whatsapp.replace(/\D/g, "");
+   const nombre = document.getElementById("clienteNombre").value.trim();
+const whatsapp = document.getElementById("clienteWhatsapp").value.trim();
+const barrio = document.getElementById("clienteBarrio").value.trim();
+const vendedor = document.getElementById("vendedor").value.trim();
+const formaPago = document.getElementById("formaPago").value;
+
+if(!nombre || !whatsapp){
+    alert("Completá nombre y WhatsApp");
+    return;
+}
+
+const whatsappLimpio = whatsapp.replace(/\D/g, "");
+
+if(!whatsappLimpio){
+    alert("Ingresá un WhatsApp válido");
+    return;
+}
+
 
     if(!nombre || !whatsapp){
         alert("Completá nombre y WhatsApp");
