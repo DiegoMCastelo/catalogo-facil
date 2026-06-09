@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ventas - Vivero</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f6ef;
+    color:#1f2d1f;
+}
+
+header{
+    background:#214d2b;
+    color:white;
+    padding:28px 20px;
+    text-align:center;
+}
+
+.contenedor{
+    max-width:1100px;
+    margin:auto;
+    padding:22px;
+}
+
+.dashboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.card-dash, .venta-card, .bloque{
+    background:white;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 8px 22px rgba(0,0,0,.08);
+}
+
+.card-dash span{
+    display:block;
+    color:#667066;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.card-dash strong{
+    font-size:26px;
+    color:#214d2b;
+}
+
+.bloque{
+    margin-bottom:22px;
+}
+
+.ranking-item{
+    display:flex;
+    justify-content:space-between;
+    border-bottom:1px solid #e6ece3;
+    padding:9px 0;
+}
+
+.ranking-item:last-child{
+    border-bottom:none;
+}
+
+.venta-card{
+    margin-bottom:14px;
+}
+
+.venta-card h3{
+    margin:0 0 6px;
+    color:#214d2b;
+}
+
+.datos{
+    color:#667066;
+    font-size:14px;
+    line-height:1.5;
+}
+
+.productos{
+    background:#f5f8f3;
+    border-radius:12px;
+    padding:10px;
+    margin:10px 0;
+}
+
+.total{
+    font-size:20px;
+    font-weight:bold;
+    color:#214d2b;
+}
+
+.volver{
+    display:inline-block;
+    margin-bottom:18px;
+    color:#214d2b;
+    font-weight:bold;
+    text-decoration:none;
+}
+
+@media(max-width:700px){
+    .contenedor{
+        padding:15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<script>
+if (sessionStorage.getItem("adminOK") !== "true") {
+    const clave = prompt("Ingrese clave de administrador:");
+
+    if (clave === "vivero123") {
+        sessionStorage.setItem("adminOK", "true");
+    } else {
+        alert("Clave incorrecta");
+        window.location.href = "index.html";
+    }
+}
+</script>
+
+<header>
+    <h1>Ventas</h1>
+    <p>Control de ventas rápidas del vivero</p>
+</header>
+
+<div class="contenedor">
+
+    <a class="volver" href="panel.html">← Volver al panel</a>
+
+    <div class="dashboard">
+        <div class="card-dash">
+            <span>📅 Ventas hoy</span>
+            <strong id="ventasHoy">$0</strong>
+        </div>
+
+        <div class="card-dash">
+            <span>📆 Ventas mes</span>
+            <strong id="ventasMes">$0</strong>
+        </div>
+
+        <div class="card-dash">
+            <span>🧾 Cantidad ventas</span>
+            <strong id="cantidadVentas">0</strong>
+        </div>
+
+        <div class="card-dash">
+            <span>💰 Total vendido</span>
+            <strong id="totalVendido">$0</strong>
+        </div>
+    </div>
+
+    <div class="bloque">
+        <h2>🏆 Ventas por vendedor</h2>
+        <div id="ventasPorVendedor">Calculando...</div>
+    </div>
+
+    <div class="bloque">
+        <h2>💳 Ventas por forma de pago</h2>
+        <div id="ventasPorPago">Calculando...</div>
+    </div>
+
+    <div class="bloque">
+        <h2>Listado de ventas</h2>
+        <div id="listaVentas">Cargando ventas...</div>
+    </div>
+
+</div>
+
+<script type="module">
+import { db } from "./js/firebase.js";
+
+import {
+    collection,
+    getDocs,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const listaVentas = document.getElementById("listaVentas");
+
+function formatoPrecio(valor){
+    return "$" + (Number(valor) || 0).toLocaleString("es-AR");
+}
+
+async function cargarVentas(){
+    listaVentas.innerHTML = "Cargando ventas...";
+
+    const q = query(collection(db, "ventas"), orderBy("fecha", "desc"));
+    const snapshot = await getDocs(q);
+
+    listaVentas.innerHTML = "";
+
+    let ventasHoy = 0;
+    let ventasMes = 0;
+    let totalVendido = 0;
+    let cantidadVentas = 0;
+
+    let porVendedor = {};
+    let porPago = {};
+
+    const hoy = new Date();
+
+    if(snapshot.empty){
+        listaVentas.innerHTML = "<p>No hay ventas cargadas todavía.</p>";
+        return;
+    }
+
+    snapshot.forEach(documento => {
+        const v = documento.data();
+
+        const total = Number(v.total) || 0;
+        totalVendido += total;
+        cantidadVentas++;
+
+        if(v.fecha?.toDate){
+            const fechaVenta = v.fecha.toDate();
+
+            if(
+                fechaVenta.getDate() === hoy.getDate() &&
+                fechaVenta.getMonth() === hoy.getMonth() &&
+                fechaVenta.getFullYear() === hoy.getFullYear()
+            ){
+                ventasHoy += total;
+            }
+
+            if(
+                fechaVenta.getMonth() === hoy.getMonth() &&
+                fechaVenta.getFullYear() === hoy.getFullYear()
+            ){
+                ventasMes += total;
+            }
+        }
+
+        const vendedor = v.vendedor || "Sin vendedor";
+        porVendedor[vendedor] = (porVendedor[vendedor] || 0) + total;
+
+        const formaPago = v.formaPago || "Sin forma de pago";
+        porPago[formaPago] = (porPago[formaPago] || 0) + total;
+
+        let productosHTML = "";
+
+        (v.productos || []).forEach(p => {
+            productosHTML += `
+                <div>
+                    ${p.cantidad || 1} x ${p.nombre || "Producto"} - ${formatoPrecio(p.precioVenta || p.precioCatalogo || 0)}
+                </div>
+            `;
+        });
+
+        listaVentas.innerHTML += `
+            <div class="venta-card">
+                <h3>${v.nombre || "Sin nombre"}</h3>
+
+                <div class="datos">
+                    📱 ${v.whatsapp || "Sin WhatsApp"}<br>
+                    📍 ${v.barrio || "Sin barrio"}<br>
+                    👤 ${v.vendedor || "Sin vendedor"}<br>
+                    💳 ${v.formaPago || "Sin forma de pago"}<br>
+                    📅 ${
+                        v.fecha?.toDate
+                            ? v.fecha.toDate().toLocaleString("es-AR")
+                            : "-"
+                    }
+                </div>
+
+                <div class="productos">
+                    ${productosHTML}
+                </div>
+
+                <div class="total">
+                    Total: ${formatoPrecio(v.total)}
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById("ventasHoy").innerText = formatoPrecio(ventasHoy);
+    document.getElementById("ventasMes").innerText = formatoPrecio(ventasMes);
+    document.getElementById("cantidadVentas").innerText = cantidadVentas;
+    document.getElementById("totalVendido").innerText = formatoPrecio(totalVendido);
+
+    mostrarRanking("ventasPorVendedor", porVendedor);
+    mostrarRanking("ventasPorPago", porPago);
+}
+
+function mostrarRanking(id, datos){
+    const contenedor = document.getElementById(id);
+
+    const ordenado = Object.entries(datos)
+        .sort((a,b) => b[1] - a[1]);
+
+    if(ordenado.length === 0){
+        contenedor.innerHTML = "<p>Sin datos todavía.</p>";
+        return;
+    }
+
+    contenedor.innerHTML = "";
+
+    ordenado.forEach(([nombre, total]) => {
+        contenedor.innerHTML += `
+            <div class="ranking-item">
+                <span>${nombre}</span>
+                <strong>${formatoPrecio(total)}</strong>
+            </div>
+        `;
+    });
+}
+
+cargarVentas();
+</script>
+
+</body>
+</html>
