@@ -461,6 +461,34 @@ body{
     cursor:pointer;
 }
 
+.btn-whatsapp-premio{
+    background:linear-gradient(135deg,#25D366,#128C7E);
+    color:white;
+    border:none;
+    padding:16px 28px;
+    border-radius:999px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:20px;
+    width:100%;
+    max-width:320px;
+
+    box-shadow:
+        0 10px 25px rgba(37,211,102,.35);
+
+    transition:.3s;
+}
+
+.btn-whatsapp-premio:hover{
+    transform:translateY(-2px);
+}
+
+.btn-whatsapp-premio:active{
+    transform:scale(.98);
+}
+
+
 </style>
 </head>
 <div id="panelRuleta" class="panel-ruleta">
@@ -600,11 +628,13 @@ window.enviarPedidoWhatsApp = function(){
 window.cerrarFormularioCliente = function(){
     document.getElementById("panelCliente").style.display = "none";
 }
-
 let ultimaConsultaId = null;
 let ultimoClienteRuleta = null;
+let mensajeWhatsAppPendiente = "";
+let ruletaGirando = false;
 
 window.confirmarPedidoCliente = async function(){
+
     const nombre = document.getElementById("clienteNombre").value.trim();
     const whatsapp = document.getElementById("clienteWhatsapp").value.trim();
     const barrio = document.getElementById("clienteBarrio").value.trim();
@@ -673,7 +703,8 @@ ultimoClienteRuleta = {
 
     mensaje += `%0ATotal estimado: $${total}`;
 
-    window.open(`https://wa.me/5493516549856?text=${mensaje}`, "_blank");
+    mensajeWhatsAppPendiente = mensaje;
+
 
     document.getElementById("panelCliente").style.display = "none";
     abrirRuleta();
@@ -683,6 +714,7 @@ window.abrirRuleta = function(){
     document.getElementById("panelRuleta").style.display = "flex";
     document.getElementById("resultadoRuleta").innerHTML = "";
     document.getElementById("btnGirarRuleta").disabled = false;
+    ruletaGirando = false;
 }
 
 window.cerrarRuleta = function(){
@@ -743,6 +775,12 @@ function elegirPremio(){
 }
 
 window.girarRuleta = async function(){
+    if(ruletaGirando){
+    return;
+}
+
+ruletaGirando = true;
+
     const btn = document.getElementById("btnGirarRuleta");
     const ruleta = document.getElementById("ruletaVisual");
     const resultado = document.getElementById("resultadoRuleta");
@@ -773,7 +811,18 @@ window.girarRuleta = async function(){
             }
         }
 
-        resultado.innerHTML = textoResultado;
+  resultado.innerHTML = textoResultado + `
+<br><br>
+
+<button class="btn-whatsapp-premio"
+onclick="enviarWhatsAppConPremio('${codigo}','${premio.premio}')">
+
+🎁 Reclamar premio por WhatsApp
+
+</button>
+`;
+
+btn.disabled = true;
 
         await addDoc(collection(db, "ruletas"), {
             consultaId: ultimaConsultaId,
@@ -886,8 +935,23 @@ window.cerrarImagen = function(){
     document.getElementById("visorImagen").style.display = "none";
 }
 
+window.enviarWhatsAppConPremio = function(codigo, premioTexto){
+    let mensajeFinal = mensajeWhatsAppPendiente;
+
+    mensajeFinal += `%0A%0A🎁 Premio ruleta:%0A`;
+    mensajeFinal += `${premioTexto}%0A`;
+    mensajeFinal += `Código: ${codigo}%0A`;
+    mensajeFinal += `Válido sólo por hoy`;
+
+    window.open(
+        `https://wa.me/5493516549856?text=${mensajeFinal}`,
+        "_blank"
+    );
+}
+
 cargarProductos();
 </script>
+
 <div id="visorImagen" class="visor-imagen">
     <span onclick="cerrarImagen()">✕</span>
     <img id="imagenGrande">
