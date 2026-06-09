@@ -384,10 +384,103 @@ body{
     height:34px;
     cursor:pointer;
 }
+.panel-ruleta{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    z-index:10000;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
 
+.ruleta-contenido{
+    background:white;
+    width:100%;
+    max-width:420px;
+    border-radius:28px;
+    padding:26px;
+    text-align:center;
+    position:relative;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+
+.ruleta-contenido h2{
+    color:#214d2b;
+    margin-top:0;
+}
+
+.ruleta-visual{
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    margin:20px auto;
+    background:conic-gradient(
+        #214d2b 0deg 70deg,
+        #8fbf7f 70deg 130deg,
+        #f0b429 130deg 190deg,
+        #25D366 190deg 250deg,
+        #dfead8 250deg 310deg,
+        #214d2b 310deg 360deg
+    );
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:54px;
+    transition:transform 2s ease-out;
+    border:8px solid #f3f6ef;
+}
+
+#btnGirarRuleta{
+    background:#214d2b;
+    color:white;
+    border:none;
+    padding:14px 24px;
+    border-radius:999px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.resultado-ruleta{
+    margin-top:18px;
+    font-size:18px;
+    font-weight:bold;
+    color:#214d2b;
+}
+
+.cerrar-ruleta{
+    position:absolute;
+    top:12px;
+    right:12px;
+    border:none;
+    background:#eee;
+    border-radius:50%;
+    width:34px;
+    height:34px;
+    cursor:pointer;
+}
 
 </style>
 </head>
+<div id="panelRuleta" class="panel-ruleta">
+    <div class="ruleta-contenido">
+        <button class="cerrar-ruleta" onclick="cerrarRuleta()">✕</button>
+
+        <h2>🎁 Ruleta Verde</h2>
+        <p>Gracias por tu consulta. Girá y ganá un beneficio válido por hoy.</p>
+
+        <div id="ruletaVisual" class="ruleta-visual">
+            🌿
+        </div>
+
+        <button id="btnGirarRuleta" onclick="girarRuleta()">
+            Girar ruleta
+        </button>
+
+        <div id="resultadoRuleta" class="resultado-ruleta"></div>
+    </div>
+</div>
 
 <body>
 
@@ -508,6 +601,9 @@ window.cerrarFormularioCliente = function(){
     document.getElementById("panelCliente").style.display = "none";
 }
 
+let ultimaConsultaId = null;
+let ultimoClienteRuleta = null;
+
 window.confirmarPedidoCliente = async function(){
     const nombre = document.getElementById("clienteNombre").value.trim();
     const whatsapp = document.getElementById("clienteWhatsapp").value.trim();
@@ -531,7 +627,7 @@ window.confirmarPedidoCliente = async function(){
     });
 
     try {
-        await addDoc(collection(db, "consultas"), {
+        const consultaRef = await addDoc(collection(db, "consultas"), {
             nombre,
             whatsapp,
             barrio,
@@ -550,6 +646,15 @@ await setDoc(doc(db, "clientes", whatsappLimpio), {
     ultimaActividad: serverTimestamp(),
     cantidadConsultas: increment(1)
 }, { merge: true });
+
+ultimaConsultaId = consultaRef.id;
+
+ultimoClienteRuleta = {
+    nombre,
+    whatsapp,
+    barrio,
+    total
+};
 
     } catch (error) {
         console.error("Error al guardar consulta:", error);
@@ -571,6 +676,121 @@ await setDoc(doc(db, "clientes", whatsappLimpio), {
     window.open(`https://wa.me/5493516549856?text=${mensaje}`, "_blank");
 
     document.getElementById("panelCliente").style.display = "none";
+    abrirRuleta();
+}
+
+window.abrirRuleta = function(){
+    document.getElementById("panelRuleta").style.display = "flex";
+    document.getElementById("resultadoRuleta").innerHTML = "";
+    document.getElementById("btnGirarRuleta").disabled = false;
+}
+
+window.cerrarRuleta = function(){
+    document.getElementById("panelRuleta").style.display = "none";
+}
+
+function elegirPremio(){
+    const r = Math.random() * 100;
+
+    if(r < 45){
+        return {
+            premio: "Seguí participando",
+            tipo: "sin_premio",
+            minimo: 0
+        };
+    }
+
+    if(r < 65){
+        return {
+            premio: "Regalo sorpresa en compras mayores a $60.000",
+            tipo: "regalo",
+            minimo: 60000
+        };
+    }
+
+    if(r < 80){
+        return {
+            premio: "Envío bonificado en compras mayores a $70.000",
+            tipo: "envio",
+            minimo: 70000
+        };
+    }
+
+    if(r < 93){
+        return {
+            premio: "5% OFF en compras mayores a $35.000",
+            tipo: "descuento",
+            porcentaje: 5,
+            minimo: 35000
+        };
+    }
+
+    if(r < 99){
+        return {
+            premio: "10% OFF en compras mayores a $60.000",
+            tipo: "descuento",
+            porcentaje: 10,
+            minimo: 60000
+        };
+    }
+
+    return {
+        premio: "15% OFF en compras mayores a $100.000",
+        tipo: "descuento",
+        porcentaje: 15,
+        minimo: 100000
+    };
+}
+
+window.girarRuleta = async function(){
+    const btn = document.getElementById("btnGirarRuleta");
+    const ruleta = document.getElementById("ruletaVisual");
+    const resultado = document.getElementById("resultadoRuleta");
+
+    btn.disabled = true;
+    resultado.innerHTML = "Girando...";
+
+    const grados = 1440 + Math.floor(Math.random() * 360);
+    ruleta.style.transform = `rotate(${grados}deg)`;
+
+    setTimeout(async () => {
+        const premio = elegirPremio();
+        const codigo = "VERDE-" + Math.floor(1000 + Math.random() * 9000);
+
+        let textoResultado = `
+            🎁 ${premio.premio}<br>
+            Código: ${codigo}<br>
+            Válido sólo por hoy
+        `;
+
+        if(ultimoClienteRuleta && premio.minimo > 0){
+            const falta = premio.minimo - ultimoClienteRuleta.total;
+
+            if(falta > 0){
+                textoResultado += `<br>Te faltan $${falta} para activar este beneficio.`;
+            } else {
+                textoResultado += `<br>Tu pedido ya cumple el mínimo.`;
+            }
+        }
+
+        resultado.innerHTML = textoResultado;
+
+        await addDoc(collection(db, "ruletas"), {
+            consultaId: ultimaConsultaId,
+            nombre: ultimoClienteRuleta?.nombre || "",
+            whatsapp: ultimoClienteRuleta?.whatsapp || "",
+            barrio: ultimoClienteRuleta?.barrio || "",
+            totalPedido: ultimoClienteRuleta?.total || 0,
+            premio: premio.premio,
+            tipo: premio.tipo,
+            porcentaje: premio.porcentaje || 0,
+            minimo: premio.minimo || 0,
+            codigo,
+            usado: false,
+            fecha: serverTimestamp()
+        });
+
+    }, 2200);
 }
 
 async function cargarProductos(){
