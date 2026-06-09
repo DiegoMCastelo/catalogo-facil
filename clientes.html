@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes - Vivero</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f6ef;
+    color:#1f2d1f;
+}
+
+header{
+    background:#214d2b;
+    color:white;
+    padding:28px 20px;
+    text-align:center;
+}
+
+.contenedor{
+    max-width:1100px;
+    margin:auto;
+    padding:22px;
+}
+
+.dashboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.card-dash,
+.cliente-card{
+    background:white;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 8px 22px rgba(0,0,0,.08);
+}
+
+.card-dash span{
+    display:block;
+    color:#667066;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.card-dash strong{
+    font-size:26px;
+    color:#214d2b;
+}
+
+.cliente-card{
+    margin-bottom:14px;
+}
+
+.cliente-card h3{
+    margin:0 0 6px;
+    color:#214d2b;
+}
+
+.datos{
+    color:#667066;
+    font-size:14px;
+    line-height:1.5;
+}
+
+.whatsapp{
+    display:inline-block;
+    margin-top:12px;
+    padding:10px 16px;
+    background:#25D366;
+    color:white;
+    border-radius:999px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.volver{
+    display:inline-block;
+    margin-bottom:18px;
+    color:#214d2b;
+    font-weight:bold;
+    text-decoration:none;
+}
+
+@media(max-width:700px){
+    .contenedor{
+        padding:15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<script>
+if (sessionStorage.getItem("adminOK") !== "true") {
+    const clave = prompt("Ingrese clave de administrador:");
+
+    if (clave === "vivero123") {
+        sessionStorage.setItem("adminOK", "true");
+    } else {
+        alert("Clave incorrecta");
+        window.location.href = "index.html";
+    }
+}
+</script>
+
+<header>
+    <h1>Clientes</h1>
+    <p>Base de clientes del vivero</p>
+</header>
+
+<div class="contenedor">
+
+    <a class="volver" href="panel.html">← Volver al panel</a>
+
+    <div class="dashboard">
+        <div class="card-dash">
+            <span>👥 Total clientes</span>
+            <strong id="totalClientes">0</strong>
+        </div>
+
+        <div class="card-dash">
+            <span>🛒 Compras totales</span>
+            <strong id="comprasTotales">0</strong>
+        </div>
+
+        <div class="card-dash">
+            <span>💰 Facturación clientes</span>
+            <strong id="facturacionClientes">$0</strong>
+        </div>
+
+        <div class="card-dash">
+            <span>🏆 Mejor cliente</span>
+            <strong id="mejorCliente">-</strong>
+        </div>
+    </div>
+
+    <div id="listaClientes">Cargando clientes...</div>
+
+</div>
+
+<script type="module">
+import { db } from "./js/firebase.js";
+
+import {
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const listaClientes = document.getElementById("listaClientes");
+
+function formatoPrecio(valor){
+    return "$" + (Number(valor) || 0).toLocaleString("es-AR");
+}
+
+async function cargarClientes(){
+    listaClientes.innerHTML = "Cargando clientes...";
+
+    const snapshot = await getDocs(collection(db, "clientes"));
+
+    listaClientes.innerHTML = "";
+
+    if(snapshot.empty){
+        listaClientes.innerHTML = "<p>No hay clientes todavía.</p>";
+        return;
+    }
+
+    let clientes = [];
+    let comprasTotales = 0;
+    let facturacionClientes = 0;
+    let mejorCliente = "-";
+    let mayorCompra = 0;
+
+    snapshot.forEach(documento => {
+        const c = documento.data();
+
+        clientes.push(c);
+
+        comprasTotales += Number(c.cantidadCompras) || 0;
+        facturacionClientes += Number(c.totalCompras) || 0;
+
+        if((Number(c.totalCompras) || 0) > mayorCompra){
+            mayorCompra = Number(c.totalCompras) || 0;
+            mejorCliente = c.nombre || c.whatsapp || "-";
+        }
+    });
+
+    clientes.sort((a,b) =>
+        (Number(b.totalCompras) || 0) - (Number(a.totalCompras) || 0)
+    );
+
+    document.getElementById("totalClientes").innerText = clientes.length;
+    document.getElementById("comprasTotales").innerText = comprasTotales;
+    document.getElementById("facturacionClientes").innerText = formatoPrecio(facturacionClientes);
+    document.getElementById("mejorCliente").innerText = mejorCliente;
+
+    clientes.forEach(c => {
+        const telefonoLimpio = (c.whatsapp || "").replace(/\D/g, "");
+
+        listaClientes.innerHTML += `
+            <div class="cliente-card">
+                <h3>${c.nombre || "Sin nombre"}</h3>
+
+                <div class="datos">
+                    📱 ${c.whatsapp || "Sin WhatsApp"}<br>
+                    📍 ${c.barrio || "Sin barrio"}<br>
+                    🛒 Compras: ${c.cantidadCompras || 0}<br>
+                    📋 Consultas: ${c.cantidadConsultas || 0}<br>
+                    💰 Total comprado: ${formatoPrecio(c.totalCompras || 0)}<br>
+                    🕒 Última actividad:
+                    ${
+                        c.ultimaActividad?.toDate
+                            ? c.ultimaActividad.toDate().toLocaleString("es-AR")
+                            : "-"
+                    }
+                </div>
+
+                <a class="whatsapp"
+                   href="https://wa.me/549${telefonoLimpio}"
+                   target="_blank">
+                   Contactar por WhatsApp
+                </a>
+            </div>
+        `;
+    });
+}
+
+cargarClientes();
+</script>
+
+</body>
+</html>

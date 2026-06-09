@@ -160,7 +160,11 @@ import {
     collection,
     getDocs,
     addDoc,
+    doc,
+    setDoc,
+    increment,
     serverTimestamp
+    
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const buscarProducto = document.getElementById("buscarProducto");
@@ -284,6 +288,16 @@ window.guardarVenta = async function(){
     const barrio = document.getElementById("clienteBarrio").value.trim();
     const vendedor = document.getElementById("vendedor").value.trim();
     const formaPago = document.getElementById("formaPago").value;
+    const whatsappLimpio = whatsapp.replace(/\D/g, "");
+
+await setDoc(doc(db, "clientes", whatsappLimpio), {
+    nombre,
+    whatsapp: whatsappLimpio,
+    barrio,
+    ultimaActividad: serverTimestamp(),
+    cantidadCompras: increment(1),
+    totalCompras: increment(total)
+}, { merge: true });
 
     if(!nombre || !whatsapp){
         alert("Completá nombre y WhatsApp");

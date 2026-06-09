@@ -433,9 +433,11 @@ import {
   query,
   orderBy,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  doc,
+  setDoc,
+  increment
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
 
 const catalogo = document.getElementById("catalogo");
 const buscador = document.getElementById("buscador");
@@ -537,7 +539,18 @@ window.confirmarPedidoCliente = async function(){
             total,
             estado: "pendiente",
             fecha: serverTimestamp()
+            
         });
+        const whatsappLimpio = whatsapp.replace(/\D/g, "");
+
+await setDoc(doc(db, "clientes", whatsappLimpio), {
+    nombre,
+    whatsapp: whatsappLimpio,
+    barrio,
+    ultimaActividad: serverTimestamp(),
+    cantidadConsultas: increment(1)
+}, { merge: true });
+
     } catch (error) {
         console.error("Error al guardar consulta:", error);
         alert("No se pudo guardar la consulta, pero igual podés enviarla por WhatsApp.");
