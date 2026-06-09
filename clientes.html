@@ -92,6 +92,15 @@ header{
         padding:15px;
     }
 }
+#buscarCliente{
+    width:100%;
+    box-sizing:border-box;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    margin-bottom:20px;
+    font-size:16px;
+}
 </style>
 </head>
 
@@ -140,6 +149,10 @@ if (sessionStorage.getItem("adminOK") !== "true") {
             <strong id="mejorCliente">-</strong>
         </div>
     </div>
+<input
+    type="text"
+    id="buscarCliente"
+    placeholder="Buscar por nombre o WhatsApp">
 
     <div id="listaClientes">Cargando clientes...</div>
 
@@ -159,6 +172,8 @@ function formatoPrecio(valor){
     return "$" + (Number(valor) || 0).toLocaleString("es-AR");
 }
 
+let clientes = [];
+
 async function cargarClientes(){
     listaClientes.innerHTML = "Cargando clientes...";
 
@@ -171,7 +186,7 @@ async function cargarClientes(){
         return;
     }
 
-    let clientes = [];
+    clientes = [];
     let comprasTotales = 0;
     let facturacionClientes = 0;
     let mejorCliente = "-";
@@ -194,6 +209,8 @@ async function cargarClientes(){
     clientes.sort((a,b) =>
         (Number(b.totalCompras) || 0) - (Number(a.totalCompras) || 0)
     );
+
+    mostrarClientes(clientes);
 
     document.getElementById("totalClientes").innerText = clientes.length;
     document.getElementById("comprasTotales").innerText = comprasTotales;
@@ -229,9 +246,105 @@ async function cargarClientes(){
             </div>
         `;
     });
+    function mostrarClientes(lista){
+
+    listaClientes.innerHTML = "";
+
+    lista.forEach(c => {
+
+        const telefonoLimpio =
+            (c.whatsapp || "").replace(/\D/g, "");
+
+        listaClientes.innerHTML += `
+        <div class="cliente-card">
+
+            <h3>${c.nombre || "Sin nombre"}</h3>
+
+            <div class="datos">
+                📱 ${c.whatsapp || ""}<br>
+                📍 ${c.barrio || ""}<br>
+                🛒 Compras: ${c.cantidadCompras || 0}<br>
+                📋 Consultas: ${c.cantidadConsultas || 0}<br>
+                💰 Total comprado:
+                ${formatoPrecio(c.totalCompras || 0)}
+            </div>
+
+            <a class="whatsapp"
+               href="https://wa.me/549${telefonoLimpio}"
+               target="_blank">
+
+               Contactar por WhatsApp
+
+            </a>
+
+        </div>
+        `;
+    });
+
+}
+function mostrarClientes(lista){
+
+    listaClientes.innerHTML = "";
+
+    lista.forEach(c => {
+
+        const telefonoLimpio =
+            (c.whatsapp || "").replace(/\D/g, "");
+
+        listaClientes.innerHTML += `
+        <div class="cliente-card">
+
+            <h3>${c.nombre || "Sin nombre"}</h3>
+
+            <div class="datos">
+                📱 ${c.whatsapp || ""}<br>
+                📍 ${c.barrio || ""}<br>
+                🛒 Compras: ${c.cantidadCompras || 0}<br>
+                📋 Consultas: ${c.cantidadConsultas || 0}<br>
+                💰 Total comprado:
+                ${formatoPrecio(c.totalCompras || 0)}
+            </div>
+
+            <a class="whatsapp"
+               href="https://wa.me/549${telefonoLimpio}"
+               target="_blank">
+
+               Contactar por WhatsApp
+
+            </a>
+
+        </div>
+        `;
+    });
+
+}
+
+document
+.getElementById("buscarCliente")
+.addEventListener("input", e => {
+
+    const texto =
+        e.target.value.toLowerCase();
+
+    const filtrados = clientes.filter(c =>
+        (c.nombre || "")
+        .toLowerCase()
+        .includes(texto)
+
+        ||
+
+        (c.whatsapp || "")
+        .includes(texto)
+    );
+
+    mostrarClientes(filtrados);
+
+});
+
 }
 
 cargarClientes();
+
 </script>
 
 </body>
