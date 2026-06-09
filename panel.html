@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel - Vivero en Córdoba</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#f3f6ef,#dfead8);
+    color:#1f2d1f;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.panel{
+    width:100%;
+    max-width:430px;
+    padding:24px;
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:28px;
+}
+
+.logo h1{
+    margin:0;
+    color:#214d2b;
+    font-size:34px;
+}
+
+.logo p{
+    color:#667066;
+    font-size:15px;
+}
+
+.card{
+    background:white;
+    border-radius:26px;
+    padding:24px;
+    box-shadow:0 18px 45px rgba(0,0,0,.12);
+}
+
+.boton{
+    display:block;
+    text-decoration:none;
+    background:#214d2b;
+    color:white;
+    padding:18px;
+    border-radius:18px;
+    margin-bottom:14px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.boton span{
+    display:block;
+    font-size:13px;
+    font-weight:normal;
+    opacity:.85;
+    margin-top:4px;
+}
+
+.boton.catalogo{
+    background:#2f6b3c;
+}
+
+.boton.venta{
+    background:#214d2b;
+}
+
+.boton.consultas{
+    background:#3f5f3f;
+}
+
+.copiar{
+    width:100%;
+    margin-top:10px;
+    padding:14px;
+    border:none;
+    border-radius:16px;
+    background:#eef4ec;
+    color:#214d2b;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.nota{
+    text-align:center;
+    font-size:13px;
+    color:#667066;
+    margin-top:18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+    <div class="logo">
+        <h1>Vivero en Córdoba</h1>
+        <p>Panel rápido de gestión</p>
+    </div>
+
+    <div class="card">
+
+        <a class="boton catalogo" href="index.html">
+            🌿 Catálogo
+            <span>Ver y compartir productos</span>
+        </a>
+
+        <button class="copiar" onclick="copiarCatalogo()">
+            🔗 Copiar link del catálogo
+        </button>
+
+        <a class="boton venta" href="venta.html">
+            💰 Venta rápida
+            <span>Cargar venta manual</span>
+        </a>
+
+        <a class="boton consultas" href="consultas.html">
+            📋 Consultas
+            <span>Ver clientes y pedidos</span>
+        </a>
+
+    </div>
+
+    <div class="nota">
+        Acceso interno del vivero
+    </div>
+
+</div>
+
+<script>
+function copiarCatalogo(){
+    const url = window.location.origin + "/index.html";
+
+    navigator.clipboard.writeText(url).then(() => {
+        alert("Link del catálogo copiado");
+    });
+}
+</script>
+
+</body>
+</html>
